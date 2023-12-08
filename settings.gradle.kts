@@ -126,6 +126,7 @@ pluginManagement {
     }
     plugins {
         if (sdkPathExists) {
+//            alias(libs.plugins.flutter) version (flutterVersion) apply false
             id("dev.flutter.flutter-gradle-plugin") version (flutterVersion) apply false
         }
     }
@@ -167,8 +168,8 @@ val buildMode = if(file("./android").exists()){
     include(":shared")
     include(":android")
     project(":android").projectDir = file("./android")
-    include(":android:app")
-    project(":android:app").projectDir = file("./android/app")
+    include(":app")
+    project(":app").projectDir = file("./android/app")
     ProjectBuildMode.KMM
 }else if (file("./app").exists()){
     rootProject.name = "android"

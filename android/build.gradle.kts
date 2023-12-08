@@ -1,1 +1,1 @@
-./build.gradle.kts
+../build.gradle.kts

@@ -1,1 +1,1 @@
-./settings.gradle.kts
+../settings.gradle.kts
