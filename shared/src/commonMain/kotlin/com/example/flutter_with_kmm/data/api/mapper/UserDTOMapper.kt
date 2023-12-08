@@ -1,8 +1,8 @@
 package com.example.flutter_with_kmm.data.api.mapper
 
-import com.example.flutter_with_kmm.entities.User
 import com.example.flutter_with_kmm.data.api.entities.UserDTO
 import com.example.flutter_with_kmm.data.api.entities.UsersDTO
+import com.example.flutter_with_kmm.entities.User
 
 object UserDTOMapper {
 
@@ -10,14 +10,14 @@ object UserDTOMapper {
         return results.map { it.toUser() }
     }
 
-    private fun UserDTO.toUser(): User{
+    private fun UserDTO.toUser(): User {
         return User(
-                picture = picture.large,
-                thumbnail = picture.thumbnail,
-                gender = gender,
-                firstName = name.first,
-                lastName = name.last
+            picture = picture.large,
+            thumbnail = picture.thumbnail,
+            gender = gender,
+            firstName = name.first,
+            lastName = name.last
         )
     }
-    
+
 }

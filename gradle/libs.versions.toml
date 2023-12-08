@@ -1,0 +1,41 @@
+[versions]
+autosize = "v1.2.1"
+jdk = "17"
+agp = "8.2.0"
+kotlin = "1.9.21"
+ktorVersion = "2.3.6"
+lottie = "6.1.0"
+#atomicfu = "2.0.0-Beta1"
+coroutines = "1.8.0-RC"
+serializationVersion = "1.5.1"
+sqldelight = "2.0.1"
+
+
+[libraries]
+kotlin-reflect = { group="org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core",version.ref = "coroutines" }
+kotlin-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "serializationVersion" }
+kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationVersion" }
+autosize = { group="com.github.JessYanCoding", name = "AndroidAutoSize", version.ref = "autosize" }
+ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktorVersion" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorVersion" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorVersion" }
+ktor-client-json = { group = "io.ktor", name = "ktor-client-json", version.ref = "ktorVersion" }
+ktor-client-serialization = { group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktorVersion" }
+lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
+sqldelight-android-driver = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }
+sqldelight-runtime = { group = "app.cash.sqldelight", name = "runtime", version.ref = "sqldelight" }
+sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+kotlin-atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+

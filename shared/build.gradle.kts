@@ -1,69 +1,88 @@
+@file:Suppress("OPT_IN_USAGE")
+
 plugins {
-    id("com.android.library")
-    kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.4.30"
-    id("com.squareup.sqldelight")
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.sqldelight)
 }
 repositories {
     gradlePluginPortal()
     google()
-    jcenter()
     mavenCentral()
 }
 kotlin {
-    android()
-    ios {
-        binaries {
+    jvmToolchain(17)
+    androidTarget {
+        publishLibraryVariants("release")
+    }
+    applyDefaultHierarchyTemplate() /* <- optional; is applied by default, when compatible */
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64() // <- Note: This target was previously not registered by the ios() shortcut!
+    ).forEach {
+        it.binaries {
             framework {
                 baseName = "shared"
             }
         }
     }
-
-    val ktorVersion = "1.4.0"
-    val coroutinesVersion = "1.4.2-native-mt"
-    val serializationVersion = "1.1.0"
-    val sqlDelightVersion: String by project
-
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation("io.ktor:ktor-client-core:$ktorVersion")
-                implementation("io.ktor:ktor-client-json:$ktorVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationVersion")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
-                implementation("io.ktor:ktor-client-serialization:$ktorVersion")
-                implementation("com.squareup.sqldelight:runtime:$sqlDelightVersion")
-                implementation("com.squareup.sqldelight:coroutines-extensions:$sqlDelightVersion")
+                implementation(libs.kotlin.coroutines)
+                implementation(libs.kotlin.serialization.core)
+                implementation(libs.kotlin.serialization.json)
+
+
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.ktor.client.json)
+                implementation(libs.ktor.client.serialization)
+                implementation(libs.sqldelight.runtime)
+                implementation(libs.sqldelight.coroutines.extensions)
+
             }
         }
         val androidMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-android:$ktorVersion")
-                implementation("com.squareup.sqldelight:android-driver:$sqlDelightVersion")
+                implementation(libs.ktor.client.android)
+                implementation(libs.sqldelight.android.driver)
             }
         }
         val iosMain by getting {
             dependencies {
-                implementation("com.squareup.sqldelight:native-driver:$sqlDelightVersion")
+                implementation(libs.sqldelight.native.driver)
             }
         }
+        all {
+            languageSettings.apply {
+                // Required for CPointer etc. since Kotlin 1.9.
+                optIn("kotlinx.serialization.ExperimentalSerializationApi")
+            }
+        }
+    }
+    compilerOptions {
+        freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
     }
 }
 
 android {
-    compileSdkVersion(29)
+    compileSdk = 34
+    namespace = "com.example.kmmsharedmodule"
     defaultConfig {
-        minSdkVersion(24)
-        targetSdkVersion(29)
+        minSdk = 25
     }
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 }
 
+// Configure a Gradle plugin
 sqldelight {
-    database("AppDatabase") {
-        packageName = "com.example.flutter_with_kmm.shared.db"
-        sourceFolders = listOf("sqldelight")
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.example.flutter_with_kmm.shared.db")
+        }
     }
 }

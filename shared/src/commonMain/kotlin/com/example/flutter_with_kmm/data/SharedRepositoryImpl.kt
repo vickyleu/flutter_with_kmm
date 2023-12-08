@@ -6,12 +6,13 @@ import com.example.flutter_with_kmm.data.db.UserDao
 import com.example.flutter_with_kmm.entities.User
 import kotlinx.coroutines.flow.Flow
 
-class SharedRepositoryImpl constructor(
-        private val userApi: UserApi,
-        private val userDao: UserDao): SharedRepository {
+class SharedRepositoryImpl(
+    private val userApi: UserApi,
+    private val userDao: UserDao
+) : SharedRepository {
 
     override suspend fun users(page: Int, results: Int): List<User> =
-            userApi.users(page, results).toUserList()
+        userApi.users(page, results).toUserList()
 
     override suspend fun saveUser(user: User) = userDao.saveUser(user)
 

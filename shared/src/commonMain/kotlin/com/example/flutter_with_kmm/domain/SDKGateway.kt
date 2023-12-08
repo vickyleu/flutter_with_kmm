@@ -11,6 +11,7 @@ class SDKGateway(private val interactor: SharedInteractor) {
             try {
                 when (method) {
                     "users" -> {
+                        @Suppress("UNCHECKED_CAST")
                         val args = arguments as List<Int>
                         val page = args[0]
                         val results = args[1]
@@ -19,8 +20,6 @@ class SDKGateway(private val interactor: SharedInteractor) {
                             callHandler.success(result)
                         }
                     }
-                }
-                when (method) {
                     "saveUser" -> {
                         val userJson = arguments as String
                         interactor.saveUser(userJson)
