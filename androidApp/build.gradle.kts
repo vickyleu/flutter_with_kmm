@@ -57,15 +57,15 @@ android {
             }
         }
     }
-    signingConfigs {
-        create("release") {
-            keyAlias = "cce"
-            keyPassword = "yk88888888"
-            storeFile = file("../cce.jks")
-            storePassword = "yk88888888"
-            enableV2Signing = true
-        }
-    }
+//    signingConfigs {
+//        create("release") {
+//            keyAlias = "cce"
+//            keyPassword = "yk88888888"
+//            storeFile = file("../cce.jks")
+//            storePassword = "yk88888888"
+//            enableV2Signing = true
+//        }
+//    }
     sourceSets.getByName("main") {
         this.java.srcDirs(this.java.srcDirs + file("src/main/kotlin"))
     }
@@ -119,20 +119,20 @@ android {
     }
 
     buildTypes {
-        val isProguard = false
         getByName("release") {
-            isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+//            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguards/proguard-rules.pro"
             )
         }
+        //
         getByName("debug") {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
             isShrinkResources = false
+//            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguards/proguard-rules.pro"
@@ -155,5 +155,6 @@ dependencies {
 //    implementation(libs.kotlin.coroutines)
 //    implementation(libs.kotlinx.coroutines.android)
     implementation(project(":shared"))
+    //noinspection UseTomlInstead
     compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
 }

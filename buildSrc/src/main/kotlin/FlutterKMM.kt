@@ -1,16 +1,13 @@
-import org.gradle.api.Project
 import org.gradle.api.GradleException
-import java.util.Properties
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.SettingsScriptApi
 import java.io.File
 import java.nio.file.Paths
+import java.util.Properties
 
 fun Project.latestFlutterVersion(): String {
     val localProperties = Properties()
-    val localPropertiesFile: File =if(rootProject.file("./android").exists()){
-        rootProject.file("./android/local.properties")
-    }else{
-        rootProject.file("local.properties")
-    }
+    val localPropertiesFile: File = rootProject.file("local.properties")
     if (localPropertiesFile.exists()) {
         localPropertiesFile.reader(Charsets.UTF_8).use { reader ->
             localProperties.load(reader)

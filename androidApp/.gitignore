@@ -1,6 +1,6 @@
 **/*.lock
 **/*.lockfile
-local.properties
+**/GeneratedPluginRegistrant.*
 # Miscellaneous
 *.class
 *.log

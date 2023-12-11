@@ -31,21 +31,21 @@ export 'cmake_project.dart';
 export 'xcode_project.dart';
 
 
-/// TODO 添加扩展方法,使flutter兼容kts文件
+// TODO(vickyleu): 添加扩展方法,使flutter兼容kts文件.
 extension _DirectoryExtension on Directory {
   File buildGradleChildFile() {
-    final file = this.childFile('build.gradle');
+    final File file = childFile('build.gradle');
     if(file.existsSync()) {
       return file;
     }
-    return this.childFile('build.gradle.kts');
+    return childFile('build.gradle.kts');
   }
   File buildGradleWithSuffixChildFile(String suffix) {
-    final file = this.childFile(fileSystem.path.join(suffix, 'build.gradle'));
+    final File file = childFile(fileSystem.path.join(suffix, 'build.gradle'));
     if(file.existsSync()) {
       return file;
     }
-    return this.childFile(fileSystem.path.join(suffix, 'build.gradle.kts'));
+    return childFile(fileSystem.path.join(suffix, 'build.gradle.kts'));
   }
 }
 
@@ -117,7 +117,9 @@ class FlutterProject {
 
   /// Returns a [FlutterProject] view of the current directory or a ToolExit error,
   /// if `pubspec.yaml` or `example/pubspec.yaml` is invalid.
-  static FlutterProject current() => globals.projectFactory.fromDirectory(globals.fs.currentDirectory);
+  static FlutterProject current(){
+    return globals.projectFactory.fromDirectory(globals.fs.currentDirectory);
+  }
 
   /// Create a [FlutterProject] and bypass the project caching.
   @visibleForTesting
@@ -249,12 +251,12 @@ class FlutterProject {
   File get flutterPluginsDependenciesFile => directory.childFile('.flutter-plugins-dependencies');
 
   /// The `.dart-tool` directory of this project.
-  Directory get dartTool => directory.childDirectory('.dart_tool');
+  Directory get dartTool{
+    return directory.childDirectory('.dart_tool');
+  }
 
   /// The directory containing the generated code for this project.
-  Directory get generated => directory
-      .absolute
-      .childDirectory('.dart_tool')
+  Directory get generated => dartTool
       .childDirectory('build')
       .childDirectory('generated')
       .childDirectory(manifest.appName);
@@ -265,14 +267,17 @@ class FlutterProject {
       .childFile('dart_plugin_registrant.dart');
 
   /// The example sub-project of this project.
-  FlutterProject get example => FlutterProject(
-    _exampleDirectory(directory),
-    _exampleManifest,
-    FlutterManifest.empty(logger: globals.logger),
-  );
+  FlutterProject get example{
+    return FlutterProject(
+      _exampleDirectory(directory),
+      _exampleManifest,
+      FlutterManifest.empty(logger: globals.logger),
+    );
+  }
 
   /// True if this project is a Flutter module project.
   bool get isModule => manifest.isModule;
+  bool get isKmmModule => android.isKmmModule;
 
   /// True if this project is a Flutter plugin project.
   bool get isPlugin => manifest.isPlugin;
@@ -436,6 +441,8 @@ abstract class FlutterProjectPlatform {
 
   /// Whether the platform exists in the project.
   bool existsSync();
+
+  bool get isKmmModule => false;
 }
 
 /// Represents the Android sub-project of a Flutter project.
@@ -487,10 +494,16 @@ class AndroidProject extends FlutterProjectPlatform {
   Directory get _flutterLibGradleRoot => isModule ? ephemeralDirectory : _editableHostAppDirectory;
 
   Directory get ephemeralDirectory => parent.directory.childDirectory('.android');
-  Directory get _editableHostAppDirectory => parent.directory.childDirectory('android');
+  Directory get _editableHostAppDirectory{
+    return isKmmModule ? parent.directory  : parent.directory.childDirectory('android');
+  }
 
   /// True if the parent Flutter project is a module.
   bool get isModule => parent.isModule;
+
+  /// True if the parent Flutter project is a KMM module.
+  @override
+  bool get isKmmModule => parent.directory.childDirectory('shared').existsSync();
 
   /// True if the parent Flutter project is a plugin.
   bool get isPlugin => parent.isPlugin;
@@ -564,13 +577,13 @@ class AndroidProject extends FlutterProjectPlatform {
 
   /// Gets the module-level build.gradle file.
   /// See https://developer.android.com/build#module-level.
-  File get appGradleFile => hostAppGradleRoot.childDirectory('app')
+  File get appGradleFile =>  (isKmmModule?hostAppGradleRoot.childDirectory('androidApp') :
+  hostAppGradleRoot.childDirectory('app'))
       .buildGradleChildFile();
 
   File get appManifestFile {
     if (isUsingGradle) {
-      return hostAppGradleRoot
-          .childDirectory('app')
+      return (isKmmModule?hostAppGradleRoot.childDirectory('androidApp') : hostAppGradleRoot.childDirectory('app'))
           .childDirectory('src')
           .childDirectory('main')
           .childFile('AndroidManifest.xml');
@@ -582,7 +595,7 @@ class AndroidProject extends FlutterProjectPlatform {
   File get gradleAppOutV1File => gradleAppOutV1Directory.childFile('app-debug.apk');
 
   Directory get gradleAppOutV1Directory {
-    return globals.fs.directory(globals.fs.path.join(hostAppGradleRoot.path, 'app', 'build', 'outputs', 'apk'));
+    return globals.fs.directory( isKmmModule? globals.fs.path.join(hostAppGradleRoot.path, 'build', 'outputs', 'apk') : globals.fs.path.join(hostAppGradleRoot.path, 'app', 'build', 'outputs', 'apk')  );
   }
 
   /// Whether the current flutter project has an Android sub-project.
@@ -663,14 +676,14 @@ $javaGradleCompatUrl
   }
 
   String? get applicationId {
-    final File gradleFile = hostAppGradleRoot.childDirectory('app').buildGradleChildFile();
+    final File gradleFile = (isKmmModule?hostAppGradleRoot.childDirectory('androidApp') : hostAppGradleRoot.childDirectory('app')).buildGradleChildFile();
     return firstMatchInFile(gradleFile, _applicationIdPattern)?.group(1);
   }
 
   /// Get the namespace for newer Android projects,
   /// which replaces the `package` attribute in the Manifest.xml.
   String? get namespace {
-    final File gradleFile = hostAppGradleRoot.childDirectory('app').buildGradleChildFile();
+    final File gradleFile = (isKmmModule?hostAppGradleRoot.childDirectory('androidApp') : hostAppGradleRoot.childDirectory('app')).buildGradleChildFile();
 
     if (!gradleFile.existsSync()) {
       return null;
@@ -714,7 +727,7 @@ $javaGradleCompatUrl
 
   File get localPropertiesFile => _flutterLibGradleRoot.childFile('local.properties');
 
-  Directory get pluginRegistrantHost => _flutterLibGradleRoot.childDirectory(isModule ? 'Flutter' : 'app');
+  Directory get pluginRegistrantHost => isKmmModule ? _flutterLibGradleRoot.childDirectory(isModule ? 'Flutter' : 'androidApp'): (_flutterLibGradleRoot.childDirectory(isModule ? 'Flutter' : 'app'));
 
   Future<void> _regenerateLibrary() async {
     ErrorHandlingFileSystem.deleteIfExists(ephemeralDirectory, recursive: true);
@@ -895,7 +908,6 @@ class WebProject extends FlutterProjectPlatform {
     return parent.directory.childDirectory('web').existsSync()
         && indexFile.existsSync();
   }
-
   /// The 'lib' directory for the application.
   Directory get libDirectory => parent.directory.childDirectory('lib');
 

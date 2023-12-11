@@ -3,12 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 //需要判断是否是jitpack的构建，如果是jitpack的构建，需要将build目录设置到项目根目录下
 if (System.getenv("JITPACK") == null) {
-    if (file("./android").exists()) {
-        rootProject.layout.buildDirectory.set(file("./build"))
-//        rootProject.layout.buildDirectory.set(file("${rootProject.rootDir.parentFile.parentFile.absolutePath}/buildOut"))
-    } else {
-        rootProject.layout.buildDirectory.set(file("../build"))
-    }
+    rootProject.layout.buildDirectory.set(file("./build"))
 }
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -42,9 +37,7 @@ subprojects {
             } else if (this.requested.group == "io.flutter") {
                 try {
                     val engineVersion = latestFlutterVersion()
-//                    println("flutterPlugin:::${engineVersion}")
                     useVersion(engineVersion)
-//                    useVersion("1.0.0-b8d35810e91ab8fc39ba5e7a41bff6f697e8e3a8")
                 } catch (ignore: Exception) {
                     println("${ignore.message}}")
                 }
@@ -59,9 +52,6 @@ subprojects {
     val androidCompileSdkInt = FlutterExtension.getCompileSdkVersion()
     val androidMinSdkInt = FlutterExtension.getMinSdkVersion()
     val androidMinSdkMinimal = 21
-
-
-    this.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get().asFile.absolutePath}/${project.name}"))
 
     this.afterEvaluate {
         val javaVersion = libs.versions.jdk.get()
@@ -159,7 +149,7 @@ subprojects {
 subprojects {
     try {
         if (this.name != "shared") {
-            this.evaluationDependsOn(":app")
+            this.evaluationDependsOn(":androidApp")
         }
     } catch (ignore: Throwable) {
     }
