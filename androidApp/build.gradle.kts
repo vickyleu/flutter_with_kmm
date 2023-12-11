@@ -57,15 +57,15 @@ android {
             }
         }
     }
-//    signingConfigs {
-//        create("release") {
-//            keyAlias = "cce"
-//            keyPassword = "yk88888888"
-//            storeFile = file("../cce.jks")
-//            storePassword = "yk88888888"
-//            enableV2Signing = true
-//        }
-//    }
+    signingConfigs {
+        create("release") {
+            keyAlias = "kmm"
+            keyPassword = "kmmkmm"
+            storeFile = file("./kmm.jks")
+            storePassword = "kmmkmm"
+            enableV2Signing = true
+        }
+    }
     sourceSets.getByName("main") {
         this.java.srcDirs(this.java.srcDirs + file("src/main/kotlin"))
     }
@@ -122,17 +122,16 @@ android {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
-//            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguards/proguard-rules.pro"
             )
         }
-        //
         getByName("debug") {
             isMinifyEnabled = false
             isShrinkResources = false
-//            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguards/proguard-rules.pro"
@@ -143,11 +142,7 @@ android {
 }
 
 extensions.configure<FlutterExtension>("flutter") {
-    if (rootProject.file("./android").exists()) {
-        this.source = "./.."
-    } else {
-        this.source = "../.."
-    }
+    this.source = "./.."
 }
 
 dependencies {
