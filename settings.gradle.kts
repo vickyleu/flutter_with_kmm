@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
 import groovy.json.JsonSlurper
+import org.gradle.internal.management.DefaultDependencyResolutionManagement
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
@@ -56,7 +57,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src",
                 patchLocation = "project.dart",
                 description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译",
-                version = "3.16.2"
+                version = "3.16.3"
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -64,7 +65,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib",
                 patchLocation = "executable.dart",
                 description = "否则当前项目无法正常被编译",
-                version = "3.16.2"
+                version = "3.16.3"
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -72,7 +73,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle.dart",
                 description = "否则当前项目无法正常被编译",
-                version = "3.16.2"
+                version = "3.16.3"
             )
         )
         fun setupFlutterPatch(flutterSdkPath: String) {
@@ -84,6 +85,12 @@ pluginManagement {
                 }
                 if (conflictDartSource.exists()) {
                     val text = conflictDartSource.readText()
+                        .trimIndent()
+                        .replace("\r\n", "")
+                        .replace("\n", "")
+                        .replace("\t", "")
+                        .replace(" ", "")
+
                     val exception = Exception(
                         """
 //////////////////////////// ${it.title} ////////////////////////////
@@ -103,6 +110,12 @@ pluginManagement {
                 """.trimIndent()
                     )
                     val textReplace = replaceFile.readText()
+                        .trimIndent()
+                        .replace("\r\n", "\n")
+                        .replace("\n", "")
+                        .replace("\t", "")
+                        .replace(" ", "")
+
                     if (textReplace != text) {
                         throw exception
                     }
@@ -157,6 +170,9 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
 }
 dependencyResolutionManagement {
+    val management = this as DefaultDependencyResolutionManagement
+    val repositoriesMode = management.repositoriesMode
+    // 需要判断
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()

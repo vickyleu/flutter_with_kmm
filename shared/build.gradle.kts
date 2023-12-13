@@ -5,11 +5,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 
 plugins {
-    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.cocoapods)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
 //    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.cocoapods)
+
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlin.atomicfu)
 }
@@ -34,6 +35,14 @@ kotlin {
 //    iosX64()
 //    iosSimulatorArm64()
     applyDefaultHierarchyTemplate() // this one
+
+    metadata {
+        compilations.matching {
+            it.name == "iosMain"
+        }.all {
+            compileTaskProvider.configure { enabled = false }
+        }
+    }
 
     cocoapods {
         summary = "Some description for the Shared Module"
@@ -170,6 +179,22 @@ android {
         minSdk = 25
     }
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguards/proguard-rules.pro"
+            )
+        }
+        getByName("debug") {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguards/proguard-rules.pro"
+            )
+        }
+    }
 }
 
 // Configure a Gradle plugin
