@@ -1,5 +1,6 @@
 [versions]
 autosize = "v1.2.1"
+tencent-imsdk = "7.6.5021"
 jdk = "17"
 agp = "8.2.0"
 kotlin = "1.9.21"
@@ -12,6 +13,8 @@ sqldelight = "2.0.1"
 
 
 [libraries]
+tencent-imsdk = { group="com.tencent.imsdk", name = "imsdk-plus", version.ref = "tencent-imsdk" }
+kotlin-test = { group="org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-reflect = { group="org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
 kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core",version.ref = "coroutines" }
 kotlin-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "serializationVersion" }

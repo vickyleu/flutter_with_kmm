@@ -1,6 +1,5 @@
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.SettingsScriptApi
 import java.io.File
 import java.nio.file.Paths
 import java.util.Properties

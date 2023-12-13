@@ -5,7 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 pluginManagement {
     listOf(repositories, dependencyResolutionManagement.repositories).forEach {
         it.apply {
@@ -46,6 +46,7 @@ pluginManagement {
             val sourceLocation: String,
             val patchLocation: String,
             val description: String,
+            val version: String
         )
 
          val patches = listOf(
@@ -53,27 +54,30 @@ pluginManagement {
                 title = "Fix Kotlin DSL bug",
                 content = "由于Flutter官方存在kotlin DSL解析的bug",
                 sourceLocation = "packages/flutter_tools/lib/src",
-                patchLocation = "patch/project.dart",
-                description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译"
+                patchLocation = "project.dart",
+                description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译",
+                version = "3.16.2"
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
                 content = "Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下",
                 sourceLocation = "packages/flutter_tools/lib",
-                patchLocation = "patch/executable.dart",
-                description = "否则当前项目无法正常被编译"
+                patchLocation = "executable.dart",
+                description = "否则当前项目无法正常被编译",
+                version = "3.16.2"
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
                 content = "Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下",
                 sourceLocation = "packages/flutter_tools/lib/src/android",
-                patchLocation = "patch/gradle.dart",
-                description = "否则当前项目无法正常被编译"
+                patchLocation = "gradle.dart",
+                description = "否则当前项目无法正常被编译",
+                version = "3.16.2"
             )
         )
         fun setupFlutterPatch(flutterSdkPath: String) {
             patches.forEach {
-                val replaceFile = file(it.patchLocation)
+                val replaceFile = file("patch/${it.version}/${it.patchLocation}")
                 val conflictDartSource = file("${flutterSdkPath}/${it.sourceLocation}/${it.patchLocation}")
                 if (!replaceFile.exists()) {
                     throw Exception("${replaceFile.absolutePath} 文件是不能删除的!!!!")
@@ -115,7 +119,7 @@ pluginManagement {
         //flutterSdkPath 返回的是flutter的目录(/Volumes/Extra/flutter),下面通过命令行获取flutter的版本号
         //需要兼容Windows,macos,linux
         val flutterVersionCommand =
-            if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+            if (System.getProperty("os.name").lowercase(java.util.Locale.getDefault()).contains("windows")) {
                 "cmd /c flutter --version"
             } else {
                 "flutter --version"
@@ -164,14 +168,7 @@ dependencyResolutionManagement {
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
 }
-gradle.beforeProject {
-    if (this.hasProperty("target-platform")) {
-        this.setProperty(
-            "target-platform",
-            "android-arm,android-arm64"
-        )//,android-arm64  //flutter打包记得开启,flutter engine 动态构建属性,在纯Android模式下会报错
-    }
-}
+
 
 rootProject.name = "flutter_with_kmm"
 include(":shared")
@@ -180,12 +177,17 @@ include(":androidApp")
 check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
     "This project needs to be run with Java 17 or higher (found: ${JavaVersion.current()})."
 }
-
+gradle.beforeProject {
+    if (this.hasProperty("target-platform")) {
+        this.setProperty(
+            "target-platform",
+            "android-arm,android-arm64"
+        )//,android-arm64  //flutter打包记得开启,flutter engine 动态构建属性,在纯Android模式下会报错
+    }
+}
 // Load and include Flutter plugins.
 val flutterProjectRoot: Path = rootProject.projectDir.toPath()
-
 val pluginsFile: Path = flutterProjectRoot.resolve(".flutter-plugins-dependencies")
-
 if (Files.exists(pluginsFile)) {
     @Suppress("UNCHECKED_CAST")
     val map = JsonSlurper().parseText(
@@ -207,5 +209,3 @@ if (Files.exists(pluginsFile)) {
         project(":$name").projectDir = pluginDirectory.toFile()
     }
 }
-
-
