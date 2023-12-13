@@ -18,6 +18,11 @@ plugins {
     // 无法使用toml定义,flutter插件是动态引入的,编译时无法获取到
     id("dev.flutter.flutter-gradle-plugin") apply false
 }
+val javaVersion = JavaVersion.toVersion(libs.versions.jdk.get())
+check(JavaVersion.current().isCompatibleWith(javaVersion)) {
+    "This project needs to be run with Java ${javaVersion.getMajorVersion()} or higher (found: ${JavaVersion.current()})."
+}
+
 
 subprojects {
     if (this.hasProperty("test")) {

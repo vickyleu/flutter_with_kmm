@@ -190,9 +190,6 @@ rootProject.name = "flutter_with_kmm"
 include(":shared")
 include(":androidApp")
 
-check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
-    "This project needs to be run with Java 17 or higher (found: ${JavaVersion.current()})."
-}
 gradle.beforeProject {
     if (this.hasProperty("target-platform")) {
         this.setProperty(

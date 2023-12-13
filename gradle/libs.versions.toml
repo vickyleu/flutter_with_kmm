@@ -13,6 +13,7 @@ sqldelight = "2.0.1"
 
 
 [libraries]
+#bouncycastle = { group = "org.bouncycastle", name =  "bcprov-jdk15to18", version.ref = "jdk" }
 tencent-imsdk = { group="com.tencent.imsdk", name = "imsdk-plus", version.ref = "tencent-imsdk" }
 kotlin-test = { group="org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-reflect = { group="org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
@@ -34,6 +35,8 @@ sqldelight-runtime = { group = "app.cash.sqldelight", name = "runtime", version.
 sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
 
 [plugins]
+
+
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
