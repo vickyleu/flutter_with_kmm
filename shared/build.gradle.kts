@@ -25,7 +25,7 @@ kotlin {
             }
         }
     }
-    val iosTargets = listOf(iosArm64(), iosX64(), iosSimulatorArm64())
+    val iosTargets = listOf(iosArm64(), iosX64())//, iosSimulatorArm64()
     iosTargets.forEach {
         it.binaries.framework {
             baseName = "shared"
@@ -57,9 +57,9 @@ kotlin {
 //            export("com.example.kmm:sharedmodule:0.0.1")
             embedBitcode(BitcodeEmbeddingMode.DISABLE)
         }
-//        pod("TXIMSDK_Plus_iOS")
+        pod("TXIMSDK_Plus_iOS"){
         // xcframework 无法正常导入
-        pod("TXIMSDK_Plus_iOS_XCFramework") {
+//        pod("TXIMSDK_Plus_iOS_XCFramework") {
             version = libs.versions.tencent.imsdk.get()
             packageName = "ImSDK_Plus" // 定义导出的kotlin包名,不写就会变成cocoapods.${moduleName}.xxx
             // 这个moduleName一定要和 framework 的名称一致，或者说与 def 里的一致，不然，无法正确的完成 cinterop
