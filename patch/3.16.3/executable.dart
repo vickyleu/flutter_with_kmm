@@ -86,9 +86,12 @@ Future<void> main(List<String> args) async {
   // instances of the platform or filesystem, so just use those.
   final LocalFileSystem fs = globals.localFileSystem;
   final String? singlePath = args.map((String e) => e.contains(fs.path.current)? e :null).nonNulls.firstOrNull;
-  if(singlePath!=null){
+  if(singlePath!=null && singlePath.contains('/build')){
     //需要移除掉/build和后面的一截
-    final String projectDir = singlePath.split('/build').first;
+    String projectDir = singlePath.split('/build').first;
+    if(projectDir.isNotEmpty&&projectDir.contains("=")){
+      projectDir = projectDir.split("=").last;
+    }
     if(projectDir.isNotEmpty && projectDir!=fs.path.current){
       fs.currentDirectory = io.Directory(projectDir);
     }

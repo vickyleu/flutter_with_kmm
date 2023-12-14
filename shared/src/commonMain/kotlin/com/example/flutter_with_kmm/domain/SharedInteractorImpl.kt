@@ -12,7 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class SharedInteractorImpl constructor(
+class SharedInteractorImpl(
     private val sharedRepository: SharedRepository,
     private val serializer: Json
 ) : SharedInteractor {

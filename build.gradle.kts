@@ -56,9 +56,20 @@ subprojects {
 
     val androidCompileSdkInt = FlutterExtension.getCompileSdkVersion()
     val androidMinSdkInt = FlutterExtension.getMinSdkVersion()
-    val androidMinSdkMinimal = 21
+    val androidTargetSdkInt = FlutterExtension.getTargetSdkVersion()
+
+
+    val androidCompileSdkMinimal = "androidCompileSdkMinimal"
+    val androidMinSdkMinimal = "androidMinSdkMinimal"
+    val androidTargetSdkMinimal = "androidTargetSdkMinimal"
+
 
     this.afterEvaluate {
+        val sdkMinimalMap = mapOf(
+            androidCompileSdkMinimal to libs.versions.androidCompileSdkMinimal.get().toInt(),
+            androidMinSdkMinimal to libs.versions.androidMinSdkMinimal.get().toInt(),
+            androidTargetSdkMinimal to libs.versions.androidTargetSdkMinimal.get().toInt()
+        )
         val javaVersion = libs.versions.jdk.get()
         val kotlinVersion = libs.versions.kotlin.get()
         this.ext["kotlin_version"] = kotlinVersion
@@ -77,13 +88,35 @@ subprojects {
                     androidProperty.buildFeatures.apply {
                         buildConfig = true
                     }
-                    androidProperty.compileSdk = androidCompileSdkInt
-                    var current = (androidProperty.defaultConfig.minSdk ?: androidMinSdkInt)
-                    if (current < androidMinSdkMinimal) current = androidMinSdkMinimal
-                    if (current < androidMinSdkInt) current = androidMinSdkInt
-                    androidProperty.defaultConfig.minSdk = current
+                    var currentCompileSdk = (androidProperty.compileSdk ?: androidCompileSdkInt)
+                    if (sdkMinimalMap.containsKey(androidCompileSdkMinimal)) {
+                        val compileSdkMinimal = sdkMinimalMap[androidCompileSdkMinimal]!!
+                        if (currentCompileSdk < compileSdkMinimal) currentCompileSdk =
+                            compileSdkMinimal
+                    }
+                    if (currentCompileSdk < androidCompileSdkInt) currentCompileSdk =
+                        androidCompileSdkInt
+                    androidProperty.compileSdk = currentCompileSdk
 
-                    androidProperty.defaultConfig.targetSdk = FlutterExtension.getTargetSdkVersion()
+
+                    var currentMinSdk = (androidProperty.defaultConfig.minSdk ?: androidMinSdkInt)
+                    if (sdkMinimalMap.containsKey(androidMinSdkMinimal)) {
+                        val minSdkMinimal = sdkMinimalMap[androidMinSdkMinimal]!!
+                        if (currentMinSdk < minSdkMinimal) currentMinSdk = minSdkMinimal
+                    }
+                    if (currentMinSdk < androidMinSdkInt) currentMinSdk = androidMinSdkInt
+                    androidProperty.defaultConfig.minSdk = currentMinSdk
+
+                    var currentTargetSdk =
+                        (androidProperty.defaultConfig.targetSdk ?: androidTargetSdkInt)
+                    if (sdkMinimalMap.containsKey(androidTargetSdkMinimal)) {
+                        val targetSdkMinimal = sdkMinimalMap[androidTargetSdkMinimal]!!
+                        if (currentTargetSdk < targetSdkMinimal) currentTargetSdk = targetSdkMinimal
+                    }
+                    if (currentTargetSdk < androidTargetSdkInt) currentTargetSdk =
+                        androidTargetSdkInt
+
+                    androidProperty.defaultConfig.targetSdk = currentTargetSdk
 
                     androidProperty.compileOptions.sourceCompatibility = java
                     androidProperty.compileOptions.targetCompatibility = java
@@ -116,13 +149,36 @@ subprojects {
                     androidProperty.buildFeatures.apply {
                         buildConfig = true
                     }
-                    androidProperty.compileSdkVersion(androidCompileSdkInt)
-                    var current = (androidProperty.defaultConfig.minSdk ?: androidMinSdkInt)
-                    if (current < androidMinSdkMinimal) current = androidMinSdkMinimal
-                    if (current < androidMinSdkInt) current = androidMinSdkInt
-                    androidProperty.defaultConfig.minSdk = current
 
-                    androidProperty.defaultConfig.targetSdk = FlutterExtension.getTargetSdkVersion()
+                    var currentCompileSdk =
+                        (androidProperty.compileSdkVersion?.toIntOrNull() ?: androidCompileSdkInt)
+                    if (sdkMinimalMap.containsKey(androidCompileSdkMinimal)) {
+                        val compileSdkMinimal = sdkMinimalMap[androidCompileSdkMinimal]!!
+                        if (currentCompileSdk < compileSdkMinimal) currentCompileSdk =
+                            compileSdkMinimal
+                    }
+                    if (currentCompileSdk < androidCompileSdkInt) currentCompileSdk =
+                        androidCompileSdkInt
+                    androidProperty.compileSdkVersion(currentCompileSdk)
+
+                    var currentMinSdk = (androidProperty.defaultConfig.minSdk ?: androidMinSdkInt)
+                    if (sdkMinimalMap.containsKey(androidMinSdkMinimal)) {
+                        val minSdkMinimal = sdkMinimalMap[androidMinSdkMinimal]!!
+                        if (currentMinSdk < minSdkMinimal) currentMinSdk = minSdkMinimal
+                    }
+                    if (currentMinSdk < androidMinSdkInt) currentMinSdk = androidMinSdkInt
+
+                    androidProperty.defaultConfig.minSdk = currentMinSdk
+
+                    var currentTargetSdk =
+                        (androidProperty.defaultConfig.targetSdk ?: androidTargetSdkInt)
+                    if (sdkMinimalMap.containsKey(androidTargetSdkMinimal)) {
+                        val targetSdkMinimal = sdkMinimalMap[androidTargetSdkMinimal]!!
+                        if (currentTargetSdk < targetSdkMinimal) currentTargetSdk = targetSdkMinimal
+                    }
+                    if (currentTargetSdk < androidTargetSdkInt) currentTargetSdk =
+                        androidTargetSdkInt
+                    androidProperty.defaultConfig.targetSdk = currentTargetSdk
                     androidProperty.ndkVersion = FlutterExtension.getNdkVersion()
 
                     androidProperty.compileOptions.sourceCompatibility = java

@@ -3,13 +3,20 @@ autosize = "v1.2.1"
 tencent-imsdk = "7.6.5021"
 jdk = "17"
 agp = "8.2.0"
+#kotlin = "2.0.0-Beta1"
 kotlin = "1.9.21"
 ktorVersion = "2.3.6"
 lottie = "6.1.0"
 #atomicfu = "2.0.0-Beta1"
+#coroutines = "1.7.3"
 coroutines = "1.8.0-RC"
 serializationVersion = "1.5.1"
 sqldelight = "2.0.1"
+
+androidCompileSdkMinimal = "34"
+androidMinSdkMinimal = "25"
+androidTargetSdkMinimal = "34"
+
 
 
 [libraries]

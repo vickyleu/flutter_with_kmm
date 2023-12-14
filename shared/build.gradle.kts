@@ -1,8 +1,8 @@
 @file:Suppress("OPT_IN_USAGE")
 
 import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
-import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -16,6 +16,7 @@ plugins {
 }
 
 kotlin {
+
     jvmToolchain(17)
     androidTarget {
         publishLibraryVariants("release")
@@ -57,8 +58,8 @@ kotlin {
 //            export("com.example.kmm:sharedmodule:0.0.1")
             embedBitcode(BitcodeEmbeddingMode.DISABLE)
         }
-        pod("TXIMSDK_Plus_iOS"){
-        // xcframework 无法正常导入
+        pod("TXIMSDK_Plus_iOS") {
+            // xcframework 无法正常导入
 //        pod("TXIMSDK_Plus_iOS_XCFramework") {
             version = libs.versions.tencent.imsdk.get()
             packageName = "ImSDK_Plus" // 定义导出的kotlin包名,不写就会变成cocoapods.${moduleName}.xxx
@@ -70,22 +71,22 @@ kotlin {
             // 在构件时判断架构类型,然后自动添加
 //            var breakCondition=false
 //            println("project.properties::${project.properties.map {"key:"+ it.key + "\n " /*+"value:" + it.value*/ }}   targetPlatform: ${project.properties["targetPlatform"]}")
-          /* val  xcFrameworkPath =  if (project.properties["targetPlatform"] == "iosArm64") {
-               xcFrameworkPathDir.resolve("ios-arm64_armv7/ImSDK_Plus.framework")
-            } else if (project.properties["targetPlatform"] == "iosX64") {
-               xcFrameworkPathDir.resolve("ios-arm64_x86_64-maccatalyst/ImSDK_Plus.framework")
-            } else if (project.properties["targetPlatform"] == "iosSimulatorArm64") {
-               xcFrameworkPathDir.resolve("ios-x86_64-simulator/ImSDK_Plus.framework")
-            } else {
-               breakCondition=true
-               null
-            }.let {
-                println("xcFrameworkPath: $it")
-               it
-            }
-            if (breakCondition){
+            /* val  xcFrameworkPath =  if (project.properties["targetPlatform"] == "iosArm64") {
+                 xcFrameworkPathDir.resolve("ios-arm64_armv7/ImSDK_Plus.framework")
+              } else if (project.properties["targetPlatform"] == "iosX64") {
+                 xcFrameworkPathDir.resolve("ios-arm64_x86_64-maccatalyst/ImSDK_Plus.framework")
+              } else if (project.properties["targetPlatform"] == "iosSimulatorArm64") {
+                 xcFrameworkPathDir.resolve("ios-x86_64-simulator/ImSDK_Plus.framework")
+              } else {
+                 breakCondition=true
+                 null
+              }.let {
+                  println("xcFrameworkPath: $it")
+                 it
+              }
+              if (breakCondition){
 
-            }*/
+              }*/
 
             extraOpts = listOf(
                 "-compiler-option", "-DNS_FORMAT_ARGUMENT(A)=",
@@ -99,7 +100,7 @@ kotlin {
     }
 
     sourceSets {
-        commonMain.dependencies {
+        val commonMain by getting {
             dependencies {
                 implementation(libs.kotlin.coroutines)
                 implementation(libs.kotlin.serialization.core)
@@ -111,21 +112,26 @@ kotlin {
                 implementation(libs.ktor.client.serialization)
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
-
             }
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+        val commonTest by getting {
+            dependencies {
+                implementation(libs.kotlin.test)
+            }
         }
-        androidMain.dependencies {
+        val androidMain by getting {
+            dependsOn(commonMain)
             dependencies {
                 implementation(libs.ktor.client.android)
                 implementation(libs.sqldelight.android.driver)
                 api(libs.tencent.imsdk)
             }
         }
-        iosMain.dependencies {
-            implementation(libs.sqldelight.native.driver)
+        val iosMain by getting {
+            dependsOn(commonMain)
+            dependencies {
+                implementation(libs.sqldelight.native.driver)
+            }
         }
 
         all {
@@ -136,36 +142,35 @@ kotlin {
             }
         }
     }
-    compilerOptions {
+
+
+    /*compilerOptions {
         freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
-    }
+    }*/
 }
 tasks.withType<PodGenTask>().configureEach {
     doLast {
+        val replaceContent = """
+                if config.base_configuration_reference
+                  config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+                  config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = "i386"
+                end
+                xcconfig_path = config.base_configuration_reference.real_path
+                xcconfig = File.read(xcconfig_path)
+                xcconfig_mod = xcconfig.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
+                File.open(xcconfig_path, "w") { |file| file << xcconfig_mod }
+        """.trimIndent()
+
         podfile.get().apply {
             val text = readText()
             val result = text.replace(
-                "post_install do |installer|",
-                """post_install do |installer|
-   installer.generated_projects.each do |project|
-     project.targets.each do |target|
-          target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-          end
-     end
-   end
-   installer.pods_project.targets.each do |target|
-     target.build_configurations.each do |config|
-       if config.base_configuration_reference
-         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
-         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = "i386"
-       end
-       xcconfig_path = config.base_configuration_reference.real_path
-       xcconfig = File.read(xcconfig_path)
-       xcconfig_mod = xcconfig.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
-       File.open(xcconfig_path, "w") { |file| file << xcconfig_mod }
-     end
-   end
+                "  installer.pods_project.targets.each do |target|\n" +
+                        "    target.build_configurations.each do |config|\n" +
+                        "      \n",
+                """
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+$replaceContent
 """.trimIndent()
             )
             writeText(result)
@@ -203,5 +208,11 @@ sqldelight {
         create("AppDatabase") {
             packageName.set("com.example.flutter_with_kmm.shared.db")
         }
+    }
+}
+
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        freeCompilerArgs += listOf("-Xexpect-actual-classes", "-opt-in=kotlin.RequiresOptIn")
     }
 }

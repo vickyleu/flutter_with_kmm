@@ -183,8 +183,9 @@ dependencyResolutionManagement {
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
-}
 
+
+}
 
 rootProject.name = "flutter_with_kmm"
 include(":shared")
