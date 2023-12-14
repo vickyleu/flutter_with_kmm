@@ -1,8 +1,11 @@
 @file:Suppress("OPT_IN_USAGE")
 
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension
 import org.jetbrains.kotlin.gradle.plugin.mpp.BitcodeEmbeddingMode
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+//import xcframework.setupCInteropWithXCFrameworks
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -24,8 +27,17 @@ kotlin {
             }
         }
     }
+    /*fun configureNativeTarget(): KotlinNativeTarget.() -> Unit = {
+        val xcFrameworkPathDir = project.layout.buildDirectory.get()
+            .asFile.resolve("cocoapods/synthetic/ios/Pods/TXIMSDK_Plus_iOS_XCFramework")
+        setupCInteropWithXCFrameworks("TXIMSDK_Plus_iOS_XCFramework", listOf("ImSDK_Plus"),xcFrameworkPathDir)
+    }
+    iosX64(configure = configureNativeTarget())
+    iosArm64(configure = configureNativeTarget())*/
+
     iosX64()
     iosArm64()
+
 //    iosSimulatorArm64() // TXIMSDK_Plus_iOS 不支持虚拟机,TXIMSDK_Plus_iOS_XCFramework 又无法使用
     applyDefaultHierarchyTemplate() // this one
 
@@ -43,11 +55,15 @@ kotlin {
         version = "1.0"
         ios.deploymentTarget = "12.0"
         podfile = project.file("../ios/Podfile")
+//        framework {
+//            baseName = "shared"
+//            isStatic = true
+//            transitiveExport = false
+//            embedBitcode(BitcodeEmbeddingMode.DISABLE)
+//        }
         framework {
             baseName = "shared"
             isStatic = true
-            transitiveExport = false
-            embedBitcode(BitcodeEmbeddingMode.DISABLE)
         }
         pod("TXIMSDK_Plus_iOS") {
             // xcframework 无法正常导入
@@ -57,12 +73,16 @@ kotlin {
             // 这个moduleName一定要和 framework 的名称一致，或者说与 def 里的一致，不然，无法正确的完成 cinterop
             moduleName = "ImSDK_Plus" // 参考/build/shared/cocoapods/defs/里面的modules名称,没有后缀
             // XCFramework 无法找到,需要手动指定路径,
-            val xcFrameworkPathDir =
-                project.layout.buildDirectory.get().asFile.resolve("shared/cocoapods/synthetic/ios/Pods/TXIMSDK_Plus_iOS_XCFramework/ImSDK_Plus.xcframework")
+
+            val xcFrameworkPathDir = project.layout.buildDirectory.get()
+                .asFile.resolve("cocoapods/synthetic/ios/Pods/TXIMSDK_Plus_iOS_XCFramework/ImSDK_Plus.xcframework")
             extraOpts = listOf(
                 "-compiler-option", "-DNS_FORMAT_ARGUMENT(A)=",
-                "-verbose"
+                "-verbose",
+                "-Xuser-setup-hint","<<xcframework import is  unavailable>>",
+//                "-libraryPath", xcFrameworkPathDir.absolutePath
             )
+//            this.source=CocoapodsExtension.CocoapodsDependency.PodLocation.Path(xcFrameworkPathDir)
         }
 //        extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
         extraSpecAttributes["resources"] =

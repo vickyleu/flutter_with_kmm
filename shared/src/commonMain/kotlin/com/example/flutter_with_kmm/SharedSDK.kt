@@ -11,13 +11,16 @@ import com.example.flutter_with_kmm.domain.SDKGateway
 import com.example.flutter_with_kmm.domain.SharedInteractor
 import com.example.flutter_with_kmm.domain.SharedInteractorImpl
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
+internal expect fun httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
+
 class SharedSDK(driverFactory: DatabaseDriverFactory) {
 
-    private val client: HttpClient = HttpClient {
+    private val client: HttpClient = httpClient {
         install(ContentNegotiation) {
             /*serializer = KotlinxSerializer(Json {
                 ignoreUnknownKeys = true

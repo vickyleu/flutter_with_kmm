@@ -193,6 +193,7 @@ rootProject.name = "flutter_with_kmm"
 include(":shared")
 include(":androidApp")
 
+
 gradle.beforeProject {
     if (this.hasProperty("target-platform")) {
         this.setProperty(

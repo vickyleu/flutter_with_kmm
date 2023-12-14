@@ -2,14 +2,23 @@
 if (System.getenv("JITPACK") == null) {
     rootProject.layout.buildDirectory.set(file("../build/buildSrc"))
 }
+
 plugins {
     `kotlin-dsl`
 }
 
+sourceSets{
+    main {
+        java {
+            srcDir("src/main/kotlin")
+            exclude("src/main/kotlin/xcframework/**.kt")
+        }
+    }
+}
 repositories {
+    google()
+    mavenCentral()
     gradlePluginPortal()
 }
-
-dependencies{
-    implementation(kotlin("stdlib"))
+dependencies {
 }
