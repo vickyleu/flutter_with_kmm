@@ -130,12 +130,14 @@ pluginManagement {
     flutterSdkPath()?.apply {
         sdkPathExists = true
         //flutterSdkPath 返回的是flutter的目录(/Volumes/Extra/flutter),下面通过命令行获取flutter的版本号
+        println("flutterSdkPath:$this")
         //需要兼容Windows,macos,linux
+        //should absolute path by xcode analyze,https://github.com/flutter/flutter/issues/110069#issuecomment-1223963568
         val flutterVersionCommand =
             if (System.getProperty("os.name").lowercase(java.util.Locale.getDefault()).contains("windows")) {
-                "cmd /c flutter --version"
+                "cmd /c ${this}\\bin\\flutter --version"
             } else {
-                "flutter --version"
+                "${this}/bin/flutter --version"
             }
         // 在gradle kts中执行这段命令,然后的得到结果
         val flutterVersionResult =

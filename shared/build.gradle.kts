@@ -26,14 +26,8 @@ kotlin {
             }
         }
     }
-    val iosTargets = listOf(iosArm64(), iosX64())//, iosSimulatorArm64()
-    iosTargets.forEach {
-        it.binaries.framework {
-            baseName = "shared"
-        }
-    }
-//    iosArm64()
-//    iosX64()
+    iosX64()
+    iosArm64()
 //    iosSimulatorArm64()
     applyDefaultHierarchyTemplate() // this one
 
@@ -53,7 +47,7 @@ kotlin {
         podfile = project.file("../ios/Podfile")
         framework {
             baseName = "shared"
-            isStatic = false
+            isStatic = true
             transitiveExport = false
 //            export("com.example.kmm:sharedmodule:0.0.1")
             embedBitcode(BitcodeEmbeddingMode.DISABLE)
