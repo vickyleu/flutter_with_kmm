@@ -9,8 +9,6 @@ plugins {
     alias(libs.plugins.kotlin.cocoapods)
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.serialization)
-//    alias(libs.plugins.kotlin.android)
-
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlin.atomicfu)
 }
@@ -28,7 +26,7 @@ kotlin {
     }
     iosX64()
     iosArm64()
-//    iosSimulatorArm64()
+//    iosSimulatorArm64() // TXIMSDK_Plus_iOS 不支持虚拟机,TXIMSDK_Plus_iOS_XCFramework 又无法使用
     applyDefaultHierarchyTemplate() // this one
 
     metadata {
@@ -49,7 +47,6 @@ kotlin {
             baseName = "shared"
             isStatic = true
             transitiveExport = false
-//            export("com.example.kmm:sharedmodule:0.0.1")
             embedBitcode(BitcodeEmbeddingMode.DISABLE)
         }
         pod("TXIMSDK_Plus_iOS") {
@@ -62,32 +59,11 @@ kotlin {
             // XCFramework 无法找到,需要手动指定路径,
             val xcFrameworkPathDir =
                 project.layout.buildDirectory.get().asFile.resolve("shared/cocoapods/synthetic/ios/Pods/TXIMSDK_Plus_iOS_XCFramework/ImSDK_Plus.xcframework")
-            // 在构件时判断架构类型,然后自动添加
-//            var breakCondition=false
-//            println("project.properties::${project.properties.map {"key:"+ it.key + "\n " /*+"value:" + it.value*/ }}   targetPlatform: ${project.properties["targetPlatform"]}")
-            /* val  xcFrameworkPath =  if (project.properties["targetPlatform"] == "iosArm64") {
-                 xcFrameworkPathDir.resolve("ios-arm64_armv7/ImSDK_Plus.framework")
-              } else if (project.properties["targetPlatform"] == "iosX64") {
-                 xcFrameworkPathDir.resolve("ios-arm64_x86_64-maccatalyst/ImSDK_Plus.framework")
-              } else if (project.properties["targetPlatform"] == "iosSimulatorArm64") {
-                 xcFrameworkPathDir.resolve("ios-x86_64-simulator/ImSDK_Plus.framework")
-              } else {
-                 breakCondition=true
-                 null
-              }.let {
-                  println("xcFrameworkPath: $it")
-                 it
-              }
-              if (breakCondition){
-
-              }*/
-
             extraOpts = listOf(
                 "-compiler-option", "-DNS_FORMAT_ARGUMENT(A)=",
                 "-verbose"
             )
         }
-
 //        extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
         extraSpecAttributes["resources"] =
             "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
@@ -116,7 +92,7 @@ kotlin {
         val androidMain by getting {
             dependsOn(commonMain)
             dependencies {
-                implementation(libs.ktor.client.android)
+                implementation(libs.ktor.client.okhttp)
                 implementation(libs.sqldelight.android.driver)
                 api(libs.tencent.imsdk)
             }
@@ -124,6 +100,7 @@ kotlin {
         val iosMain by getting {
             dependsOn(commonMain)
             dependencies {
+                implementation(libs.ktor.client.darwin)
                 implementation(libs.sqldelight.native.driver)
             }
         }
