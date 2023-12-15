@@ -34,7 +34,9 @@ subprojects {
         }
     }
     if (System.getenv("JITPACK") == null) {
-        this.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get().asFile.absolutePath}/${project.name}"))
+//        if(project.name != "shared"){
+            this.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get().asFile.absolutePath}/${project.name}"))
+//        }
     }
     configurations.all {
         resolutionStrategy.eachDependency {

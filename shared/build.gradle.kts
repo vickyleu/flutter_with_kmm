@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.gradle.targets.native.tasks.GenerateArtifactPodspecTask
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.PodspecTask
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -38,7 +40,7 @@ kotlin {
 
     metadata {
         compilations.matching {
-            it.name == "iosMain"
+            it.name == "iosMain" || it.name == "ios"
         }.all {
             compileTaskProvider.configure { enabled = false }
         }
@@ -135,8 +137,12 @@ kotlin {
     }*/
 }
 tasks.withType<PodGenTask>().configureEach {
-    doLast {
-        val replaceContent = """
+    doFirst {
+        podfile.get().apply {
+            var text = readText()
+            val lines = text.lines().toMutableList()
+            val index = lines.indexOfFirst { it.contains("config.build_settings['CODE_SIGNING_ALLOWED']") }
+            lines.add(index+1,"""
                 if config.base_configuration_reference
                   config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
                   config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = "i386"
@@ -145,24 +151,39 @@ tasks.withType<PodGenTask>().configureEach {
                 xcconfig = File.read(xcconfig_path)
                 xcconfig_mod = xcconfig.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
                 File.open(xcconfig_path, "w") { |file| file << xcconfig_mod }
-        """.trimIndent()
-
-        podfile.get().apply {
-            val text = readText()
-            val result = text.replace(
-                "  installer.pods_project.targets.each do |target|\n" +
-                        "    target.build_configurations.each do |config|\n" +
-                        "      \n",
-                """
-  installer.pods_project.targets.each do |target|
-    target.build_configurations.each do |config|
-$replaceContent
-""".trimIndent()
-            )
-            writeText(result)
+        """.trimIndent().replaceIndent("            "))
+            text = lines.joinToString("\n")
+            writeText(text)
         }
     }
 }
+
+tasks.withType<PodspecTask>().configureEach {
+    doLast {
+        this@configureEach.outputFile.apply {
+            var text = readText()
+            val placeHolder="\${PODS_ROOT}"
+            val searchPathAppend= this@configureEach.pods.get().mapNotNull {
+                "\"$placeHolder/${it.name}\""
+            }.joinToString(" ")
+            var lines = text.lines().toMutableList()
+            var index = lines.indexOfFirst { it.contains("spec.vendored_frameworks") }
+            lines[index] = "    spec.vendored_frameworks      = 'shared.framework'"
+            index = lines.indexOfFirst { it.contains("spec.source") }
+            lines[index] = "    spec.source                   = { :path => '../build/shared/cocoapods/framework' }"
+//            lines.add(index+1,"    spec.source                   = { :path => '../build/shared/cocoapods/framework' }")
+
+            text = lines.joinToString("\n")
+            /*lines = text.lines().toMutableList()
+            index = lines.indexOfFirst { it.contains("spec.pod_target_xcconfig") }
+            lines.add(index+1,"        'FRAMEWORK_SEARCH_PATHS' => '\"${placeHolder}/../../build/shared/cocoapods/framework\" ',")*/
+
+            println("result::$text")
+            writeText(text)
+        }
+    }
+}
+
 android {
     compileSdk = 34
     namespace = "com.example.kmmsharedmodule"

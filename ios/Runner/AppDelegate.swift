@@ -1,10 +1,12 @@
 import UIKit
 import Flutter
 import shared
+import ImSDK_Plus
+
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     
-   private lazy var gateway:SDKGateway
+  private  var gateway:SDKGateway?
     
   override func application(
     _ application: UIApplication,
