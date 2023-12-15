@@ -22,7 +22,7 @@ var flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    id("dev.flutter.flutter-gradle-plugin")
+    alias(libs.plugins.flutter.plugin)
 }
 
 java {

@@ -74,6 +74,14 @@ pluginManagement {
                 patchLocation = "gradle.dart",
                 description = "否则当前项目无法正常被编译",
                 version = "3.16.3"
+            ),
+            FlutterPatch(
+                title = "Fix agp plugin too high error",
+                content = "Flutter默认最大支持AGP8.1,强制替换成最大支持8.3",
+                sourceLocation = "packages/flutter_tools/lib/src/android",
+                patchLocation = "gradle_utils.dart",
+                description = "否则当前项目无法正常被编译",
+                version = "3.16.3"
             )
         )
         fun setupFlutterPatch(flutterSdkPath: String) {
@@ -155,16 +163,9 @@ pluginManagement {
         settings.extra["flutterSdkPath"] = this
         includeBuild("${this}/packages/flutter_tools/gradle")
     }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.name == "flutter" || requested.id.name == "flutter-gradle-plugin") {
-                useModule("dev.flutter:flutter-gradle-plugin:$flutterVersion")
-            }
-        }
-    }
     plugins {
         if (sdkPathExists) {
-            id("dev.flutter.flutter-gradle-plugin") version (flutterVersion) apply false
+            id("dev.flutter.flutter-plugin-loader") version "1.0.0" // settings plugin, only work for settings.gradle
         }
     }
 }

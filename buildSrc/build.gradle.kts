@@ -7,18 +7,11 @@ plugins {
     `kotlin-dsl`
 }
 
-sourceSets{
-    main {
-        java {
-            srcDir("src/main/kotlin")
-            exclude("src/main/kotlin/xcframework/**.kt")
-        }
-    }
-}
 repositories {
     google()
     mavenCentral()
-    gradlePluginPortal()
 }
 dependencies {
+    compileOnly("com.android.tools.build:gradle:8.2.0")
+//    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
 }
