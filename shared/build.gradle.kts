@@ -191,6 +191,11 @@ tasks.withType<PodspecTask>().configureEach {
         val dest = "./${project.name}.framework"
         val frameworkLinkDir = projectDir.resolve("framework")
         frameworkLinkDir.createDirectory()
+        projectDir.resolve("framework/${project.name}.framework").apply {
+            if(exists()){
+                delete()
+            }
+        }
         ProcessBuilder().directory(frameworkLinkDir)
             .command(
                 "ln", "-s", source, dest
