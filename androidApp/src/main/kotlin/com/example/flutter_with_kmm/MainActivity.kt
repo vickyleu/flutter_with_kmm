@@ -14,6 +14,7 @@ class MainActivity : FlutterActivity() {
 
     private val gateway: SDKGateway = SharedSDK(
         driverFactory = DatabaseDriverFactory(context),
+        platform = BaseApplication(this.application)
     ).gateway
 
     override fun onCreate(savedInstanceState: Bundle?) {

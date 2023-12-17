@@ -34,7 +34,7 @@ subprojects {
         }
     }
     if (System.getenv("JITPACK") == null) {
-//        if(project.name != "shared"){
+//        if(project.name != "shared"){ // shared 模块不能设置build目录，否则会导致cocoapods无法链接shared.framework
             this.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get().asFile.absolutePath}/${project.name}"))
 //        }
     }

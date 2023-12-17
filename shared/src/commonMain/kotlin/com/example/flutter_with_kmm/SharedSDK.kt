@@ -14,11 +14,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.Platform
 import kotlinx.serialization.json.Json
 
 internal expect fun httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
 
-class SharedSDK(driverFactory: DatabaseDriverFactory) {
+expect class BaseApplication
+
+class SharedSDK(driverFactory: DatabaseDriverFactory,val platform: BaseApplication){
 
     private val client: HttpClient = httpClient {
         install(ContentNegotiation) {

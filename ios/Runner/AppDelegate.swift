@@ -1,7 +1,6 @@
 import UIKit
 import Flutter
 import shared
-import ImSDK_Plus
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
@@ -12,8 +11,8 @@ import ImSDK_Plus
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    GeneratedPluginRegistrant.register(with: self)
-    gateway = SharedSDK(driverFactory = DatabaseDriverFactory(application)).gateway
+    IdiotFlutterBridge.register(with:  self)
+    gateway = SharedSDK(driverFactory: DatabaseDriverFactory(),platform: BaseApplication(app: application)).gateway
       
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

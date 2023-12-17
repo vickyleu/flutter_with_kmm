@@ -1,7 +1,8 @@
-import org.jetbrains.kotlin.gradle.targets.native.tasks.GenerateArtifactPodspecTask
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.PodspecTask
+import org.jetbrains.kotlin.incremental.createDirectory
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -34,6 +35,16 @@ kotlin {
 
     iosX64()
     iosArm64()
+
+    val iosSupported = listOf(
+        iosX64(),
+        iosArm64(),
+    )
+//    iosSupported.forEach {
+//        it.compilations.forEach {
+//            it.kotlinOptions.freeCompilerArgs += arrayOf("-linker-options", "-lsqlite3")
+//        }
+//    }
 
 //    iosSimulatorArm64() // TXIMSDK_Plus_iOS 不支持虚拟机,TXIMSDK_Plus_iOS_XCFramework 又无法使用
     applyDefaultHierarchyTemplate() // this one
@@ -76,12 +87,12 @@ kotlin {
             extraOpts = listOf(
                 "-compiler-option", "-DNS_FORMAT_ARGUMENT(A)=",
                 "-verbose",
-                "-Xuser-setup-hint","<<xcframework import is  unavailable>>",
+                "-Xuser-setup-hint", "<<xcframework import is  unavailable>>",
 //                "-libraryPath", xcFrameworkPathDir.absolutePath
             )
 //            this.source=CocoapodsExtension.CocoapodsDependency.PodLocation.Path(xcFrameworkPathDir)
         }
-//        extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
+        extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
         extraSpecAttributes["resources"] =
             "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
     }
@@ -120,6 +131,8 @@ kotlin {
                 implementation(libs.ktor.client.darwin)
                 implementation(libs.sqldelight.native.driver)
             }
+
+
         }
 
         all {
@@ -136,13 +149,14 @@ kotlin {
         freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
     }*/
 }
+
 tasks.withType<PodGenTask>().configureEach {
-    doFirst {
+    doLast {
         podfile.get().apply {
-            var text = readText()
-            val lines = text.lines().toMutableList()
-            val index = lines.indexOfFirst { it.contains("config.build_settings['CODE_SIGNING_ALLOWED']") }
-            lines.add(index+1,"""
+            CocoapodsAppender.Builder(this)
+                .append(
+                    "config.build_settings['CODE_SIGNING_ALLOWED']",
+                    """
                 if config.base_configuration_reference
                   config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
                   config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = "i386"
@@ -151,39 +165,44 @@ tasks.withType<PodGenTask>().configureEach {
                 xcconfig = File.read(xcconfig_path)
                 xcconfig_mod = xcconfig.gsub(/DT_TOOLCHAIN_DIR/, "TOOLCHAIN_DIR")
                 File.open(xcconfig_path, "w") { |file| file << xcconfig_mod }
-        """.trimIndent().replaceIndent("            "))
-            text = lines.joinToString("\n")
-            writeText(text)
+        """.trimIndent().replaceIndent("            ")
+                )
+                .build().apply {
+                    writeText(this)
+                }
         }
     }
 }
-
 tasks.withType<PodspecTask>().configureEach {
     doLast {
-        this@configureEach.outputFile.apply {
-            var text = readText()
-            val placeHolder="\${PODS_ROOT}"
-            val searchPathAppend= this@configureEach.pods.get().mapNotNull {
-                "\"$placeHolder/${it.name}\""
-            }.joinToString(" ")
-            var lines = text.lines().toMutableList()
-            var index = lines.indexOfFirst { it.contains("spec.vendored_frameworks") }
-            lines[index] = "    spec.vendored_frameworks      = 'shared.framework'"
-            index = lines.indexOfFirst { it.contains("spec.source") }
-            lines[index] = "    spec.source                   = { :path => '../build/shared/cocoapods/framework' }"
-//            lines.add(index+1,"    spec.source                   = { :path => '../build/shared/cocoapods/framework' }")
-
-            text = lines.joinToString("\n")
-            /*lines = text.lines().toMutableList()
-            index = lines.indexOfFirst { it.contains("spec.pod_target_xcconfig") }
-            lines.add(index+1,"        'FRAMEWORK_SEARCH_PATHS' => '\"${placeHolder}/../../build/shared/cocoapods/framework\" ',")*/
-
-            println("result::$text")
-            writeText(text)
+        // podspec cannot ref framework from parent dir, so we need to copy symbol link to current dir
+        outputFile.apply {
+            CocoapodsAppender.Builder(this)
+                .replace(
+                    "spec.vendored_frameworks",
+                    "    spec.vendored_frameworks      = 'framework/${project.name}.framework'"
+                )
+                .build().apply {
+                    writeText(this)
+                }
         }
+        val source =
+            projectDir.parentFile.resolve("build/shared/cocoapods/framework/${project.name}.framework").absolutePath
+        val dest = "./${project.name}.framework"
+        val frameworkLinkDir = projectDir.resolve("framework")
+        frameworkLinkDir.createDirectory()
+        ProcessBuilder().directory(frameworkLinkDir)
+            .command(
+                "ln", "-s", source, dest
+            )
+            .start().apply {
+                waitFor()
+            }.inputStream.bufferedReader()
+            .readText().apply {
+                println("link shared.framework result:$this")
+            }
     }
 }
-
 android {
     compileSdk = 34
     namespace = "com.example.kmmsharedmodule"
