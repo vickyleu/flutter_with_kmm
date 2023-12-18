@@ -16,12 +16,17 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.Platform
 import kotlinx.serialization.json.Json
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 internal expect fun httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
 
 expect class BaseApplication
 
 class SharedSDK(driverFactory: DatabaseDriverFactory,val platform: BaseApplication){
+    companion object{
+        internal const val  CHANNEL = "example/platform"
+    }
 
     private val client: HttpClient = httpClient {
         install(ContentNegotiation) {
@@ -53,4 +58,19 @@ class SharedSDK(driverFactory: DatabaseDriverFactory,val platform: BaseApplicati
 
     val gateway: SDKGateway = SDKGateway(interactor)
 
+}
+internal class AutoUpdateDelegate<T>(private val onChange: (T) -> Unit) :
+    ReadWriteProperty<Any?, T?> {
+    private var value: T? = null
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T? {
+        return value
+    }
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T?) {
+        if (value != newValue) {
+            value = newValue
+            if (newValue != null)
+                onChange(newValue)
+        }
+    }
 }

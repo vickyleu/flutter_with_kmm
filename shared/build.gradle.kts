@@ -73,6 +73,9 @@ kotlin {
             baseName = "shared"
             isStatic = true
         }
+        pod("Flutter"){
+            packageName="io.flutter.embedding.engine"
+        }
         pod("TXIMSDK_Plus_iOS") {
             // xcframework 无法正常导入
 //        pod("TXIMSDK_Plus_iOS_XCFramework") {
@@ -108,6 +111,9 @@ kotlin {
                 implementation(libs.ktor.serialization.kotlinx.json)
                 implementation(libs.ktor.client.json)
                 implementation(libs.ktor.client.serialization)
+
+                api(kotlin("reflect"))
+
                 implementation(libs.sqldelight.runtime)
                 implementation(libs.sqldelight.coroutines.extensions)
             }
@@ -122,7 +128,11 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.sqldelight.android.driver)
+                val flutterVersion= latestFlutterVersion()
+                //noinspection UseTomlInstead
+                compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
                 api(libs.tencent.imsdk)
+                api("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
             }
         }
         val iosMain by getting {

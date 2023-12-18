@@ -10,6 +10,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface IdiotFlutterBridge : NSObject
+/// swift parse oc symbol like registerWithRegistryRegistry ? 
 + (void)registerWith:(NSObject<FlutterPluginRegistry>*)registry;
 @end
 

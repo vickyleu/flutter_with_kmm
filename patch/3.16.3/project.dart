@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:async';
+import 'dart:io';
+
 import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
@@ -537,24 +540,42 @@ class AndroidProject extends FlutterProjectPlatform {
       return false;
     }
     try {
-      for (final String line in appGradleFile.readAsLinesSync()) {
-        // This syntax corresponds to applying the Flutter Gradle Plugin with a
-        // script.
-        // See https://docs.gradle.org/current/userguide/plugins.html#sec:script_plugins.
-        final bool fileBasedApply = line.contains(RegExp(r'apply from: .*/flutter.gradle'));
+      if(isKmmModule){
+        final File gradlew = hostAppGradleRoot.childFile(fileSystem.path.join('gradlew'));
+        final File rootGradle = hostAppGradleRoot.childFile(fileSystem.path.join('build.gradle.kts'));
+        // ./gradlew -b ./build.gradle.kts buildEnvironment | grep "dev.flutter.flutter-gradle-plugin"
+        final  ProcessResult result = Process.runSync(
+          'bash',
+          <String>['-c', '${gradlew.path} -b ${rootGradle.path} buildEnvironment | grep "dev.flutter.flutter-gradle-plugin"'],
+          stdoutEncoding: utf8,
+        );
+        if(result.exitCode==0){
+          // Build was configured to prefer settings repositories over project repositories but repository 'maven' was added by plugin 'dev.flutter.flutter-gradle-plugin'
+          // 说明是使用了flutter-gradle-plugin插件
+          // 需要判断输出是否包含dev.flutter.flutter-gradle-plugin
+          return result.stdout.toString().contains('dev.flutter.flutter-gradle-plugin');
+        }
+        return false;
+      }else{
+        for (final String line in appGradleFile.readAsLinesSync()) {
+          // This syntax corresponds to applying the Flutter Gradle Plugin with a
+          // script.
+          // See https://docs.gradle.org/current/userguide/plugins.html#sec:script_plugins.
+          final bool fileBasedApply = line.contains(RegExp(r'apply from: .*/flutter.gradle'));
 
-        // This syntax corresponds to applying the Flutter Gradle Plugin using
-        // the declarative "plugins {}" block after including it in the
-        // pluginManagement block of the settings.gradle file.
-        // See https://docs.gradle.org/current/userguide/composite_builds.html#included_plugin_builds,
-        // as well as the settings.gradle and build.gradle templates.
-        final bool declarativeApply = line.contains('dev.flutter.flutter-gradle-plugin');
+          // This syntax corresponds to applying the Flutter Gradle Plugin using
+          // the declarative "plugins {}" block after including it in the
+          // pluginManagement block of the settings.gradle file.
+          // See https://docs.gradle.org/current/userguide/composite_builds.html#included_plugin_builds,
+          // as well as the settings.gradle and build.gradle templates.
+          final bool declarativeApply = line.contains('dev.flutter.flutter-gradle-plugin');
 
-        // This case allows for flutter run/build to work for modules. It does
-        // not guarantee the Flutter Gradle Plugin is applied.
-        final bool managed = line.contains("def flutterPluginVersion = 'managed'");
-        if (fileBasedApply || declarativeApply || managed) {
-          return true;
+          // This case allows for flutter run/build to work for modules. It does
+          // not guarantee the Flutter Gradle Plugin is applied.
+          final bool managed = line.contains("def flutterPluginVersion = 'managed'");
+          if (fileBasedApply || declarativeApply || managed) {
+            return true;
+          }
         }
       }
     } on FileSystemException {
