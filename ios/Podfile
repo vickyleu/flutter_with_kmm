@@ -5,6 +5,7 @@
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 install! 'cocoapods',
          :warn_for_unused_master_specs_repo => false
+inhibit_all_warnings!
 
 project 'Runner', {
   'Debug' => :debug,

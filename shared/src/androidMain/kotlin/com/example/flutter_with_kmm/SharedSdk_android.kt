@@ -38,7 +38,7 @@ actual class BaseApplication(val app: Application,private val handleFlutterEngin
 }
 
 
-internal actual fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient {
+internal actual fun SharedSDK.httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient {
     return HttpClient(OkHttp) {
         config()
     }

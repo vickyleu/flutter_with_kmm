@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-internal expect fun httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
+internal expect fun SharedSDK.httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
 
 expect class BaseApplication
 

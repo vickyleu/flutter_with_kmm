@@ -7,6 +7,7 @@ class SDKGateway(private val interactor: SharedInteractor) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun processCall(method : String, arguments : Any?, callHandler : CallHandler  ) {
+        println("method:::$method")
         scope.launch {
             try {
                 when (method) {

@@ -19,6 +19,7 @@ import shared
             flutterMethodChannel.setMethodCallHandler {  call, result in
                 self.gateway?.processCall(method: call.method, arguments: call.arguments, callHandler: CallHandlerImpl(callResult: result))
             }
+            print("BaseApplication:: \(self.gateway)")
             self.gateway?.setCallbacks(callback: CallbackHandlerImpl(methodChannel: flutterMethodChannel))
         }
         gateway = SharedSDK(driverFactory: DatabaseDriverFactory(),platform: platform!).gateway

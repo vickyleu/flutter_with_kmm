@@ -7,6 +7,7 @@ import io.flutter.embedding.engine.FlutterError
 import io.flutter.embedding.engine.FlutterMethodChannel
 import io.flutter.embedding.engine.FlutterResult
 import io.flutter.embedding.engine.FlutterStandardMessageCodec
+import io.flutter.embedding.engine.FlutterStandardMethodCodec
 import io.flutter.embedding.engine.FlutterViewController
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -34,10 +35,7 @@ actual class BaseApplication(
         // 在这里执行变量发生变化时的操作
         // 例如，可以在这里触发相应的操作或通知
         val binaryMessenger = engine.binaryMessenger
-        val methodChannel = FlutterMethodChannel(
-            name = SharedSDK.CHANNEL, binaryMessenger = binaryMessenger,
-            codec = FlutterStandardMessageCodec.sharedInstance()
-        )
+        val methodChannel = FlutterMethodChannel(name = SharedSDK.CHANNEL, binaryMessenger= binaryMessenger, codec = FlutterStandardMethodCodec.sharedInstance())
         handleFlutterEngineChange.invoke(methodChannel)
     }
 
@@ -50,7 +48,7 @@ actual class BaseApplication(
     }
 }
 
-internal actual fun httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient {
+internal actual fun SharedSDK.httpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient {
     return HttpClient(Darwin) {
         config()
     }
