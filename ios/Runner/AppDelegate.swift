@@ -7,27 +7,33 @@ import shared
     private var gateway:SDKGateway?
     private var lifecyle: EngineLifecycleListener?
     private var platform: BaseApplication?
-
+    
     override func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
         IdiotFlutterBridge.register(with:  self)
+        
+        // 获取主窗口
+        guard let window = UIApplication.shared.windows.first else {
+            return false
+        }
         platform = BaseApplication(app: application){ flutterMethodChannel in
             // 在这里处理 handleFlutterEngineChange
             // 你可以使用传递进来的 flutterMethodChannel 进行处理
             flutterMethodChannel.setMethodCallHandler {  call, result in
-                self.gateway?.processCall(method: call.method, arguments: call.arguments, callHandler: CallHandlerImpl(callResult: result))
+                if let gateway = self.gateway {
+                    gateway.processCall(method: call.method, arguments: call.arguments, callHandler: CallHandlerImpl(callResult: result))
+                }else{
+                    result(FlutterError(code: "10086", message: "gateway is down", details: nil))
+                }
             }
-            print("BaseApplication:: \(self.gateway)")
             self.gateway?.setCallbacks(callback: CallbackHandlerImpl(methodChannel: flutterMethodChannel))
         }
         gateway = SharedSDK(driverFactory: DatabaseDriverFactory(),platform: platform!).gateway
-        
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        if let flutterViewController = storyboard.instantiateInitialViewController() as? FlutterViewController {
-            
+        // 获取主窗口的根视图控制器
+        if let flutterViewController = window.rootViewController as? FlutterViewController {
+            // 在这里你可以访问或操作主窗口的根视图控制器
             lifecyle = SwiftEngineLifecycleListener(
                 onPreEngineRestart: { [weak self] in
                     self?.onFlutterResume()
@@ -37,11 +43,6 @@ import shared
                 }
             )
             onFlutterCreate(flutterViewController)
-            
-            //        platform.setupEngineController(controller:flutterViewController)
-            //        // 将 FlutterViewController 添加到视图层次中
-            //        self.window?.rootViewController = flutterViewController
-            //        self.window?.makeKeyAndVisible()
         }
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -59,12 +60,12 @@ import shared
 class SwiftEngineLifecycleListener: EngineLifecycleListener {
     var _onPreEngineRestart: (() -> Void)?
     var _onEngineWillDestroy: (() -> Void)?
-
+    
     init(onPreEngineRestart: @escaping () -> Void, onEngineWillDestroy: @escaping () -> Void) {
         self._onPreEngineRestart = onPreEngineRestart
         self._onEngineWillDestroy = onEngineWillDestroy
     }
-
+    
     func onPreEngineRestart() {
         // 实现 onPreEngineRestart 方法的逻辑
         _onPreEngineRestart?()

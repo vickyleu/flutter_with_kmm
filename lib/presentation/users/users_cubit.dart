@@ -15,12 +15,19 @@ class UsersCubit extends Cubit<UsersState> {
 
   getUsers() async{
     interactor.updateProgress(true);
-    List<User>? newUsers = await interactor.getUsers(++_currentPage, 20);
-    if (newUsers != null) {
-      users.addAll(newUsers);
-      emit(UsersLoaded(users: users));
-      interactor.updateProgress(false);
+    if(await interactor.isInternetGranted()) {
+      List<User>? newUsers = await interactor.getUsers(++_currentPage, 20);
+      if (newUsers != null) {
+        users.addAll(newUsers);
+        emit(UsersLoaded(users: users));
+        interactor.updateProgress(false);
+      }
+    } else {
+      print("No internet connection\n");
+      interactor.errorStream.add('No internet connection');
+      // emit(UsersError(errorText: 'No internet connection'));
     }
+
   }
 
 }

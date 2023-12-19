@@ -1,13 +1,23 @@
 package com.example.flutter_with_kmm.domain
 
-import kotlinx.coroutines.*
+import com.example.flutter_with_kmm.BaseApplication
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class SDKGateway(private val interactor: SharedInteractor) {
+expect suspend fun SDKGateway.isInternetGranted(): Boolean
+
+class SDKGateway(private val interactor: SharedInteractor, internal val platform: BaseApplication) {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    fun processCall(method : String, arguments : Any?, callHandler : CallHandler  ) {
-        println("method:::$method")
+    fun processCall(method: String, arguments: Any?, callHandler: CallHandler) {
+
+        platform.logger.error { "processCall method:::$method" }
+
         scope.launch {
             try {
                 when (method) {
@@ -21,11 +31,26 @@ class SDKGateway(private val interactor: SharedInteractor) {
                             callHandler.success(result)
                         }
                     }
+
                     "saveUser" -> {
                         val userJson = arguments as String
                         interactor.saveUser(userJson)
                         withContext(Dispatchers.Main) {
                             callHandler.success(true)
+                        }
+                    }
+
+                    "isInternetGranted" -> {
+                        val isGranted = isInternetGranted()
+                        withContext(Dispatchers.Main) {
+                            println("isInternetGranted:::$isGranted")
+                            callHandler.success(isGranted)
+                        }
+                    }
+
+                    else -> {
+                        withContext(Dispatchers.Main) {
+                            callHandler.error("Method not implemented")
                         }
                     }
                 }
@@ -37,15 +62,15 @@ class SDKGateway(private val interactor: SharedInteractor) {
         }
     }
 
-    fun setCallbacks(callback : CallbackHandler){
+    fun setCallbacks(callback: CallbackHandler) {
         interactor.setUsersUpdatesListener {
             callback.invokeMethod("users", it)
         }
     }
 
-    fun destroy(){
+    fun destroy() {
         scope.cancel()
         interactor.destroy()
     }
-    
+
 }

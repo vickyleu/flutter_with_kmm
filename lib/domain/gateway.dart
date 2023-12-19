@@ -4,6 +4,9 @@ import 'platform.dart';
 
 class Gateway {
 
+  static isInternetGranted() async{
+    return platform.invokeMethod("isInternetGranted").then((value) => bool.parse(value.toString()));
+  }
   static getUsers(int page, int results) async{
     return platform.invokeMethod<String>("users", [page, results]);
   }

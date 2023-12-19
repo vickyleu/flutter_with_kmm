@@ -14,20 +14,23 @@ import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.Platform
 import kotlinx.serialization.json.Json
+import org.lighthousegames.logging.KmLogging
+import org.lighthousegames.logging.LogLevel
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 internal expect fun SharedSDK.httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
 
-expect class BaseApplication
 
 class SharedSDK(driverFactory: DatabaseDriverFactory,val platform: BaseApplication){
     companion object{
         internal const val  CHANNEL = "example/platform"
     }
 
+    init {
+        KmLogging.setLogLevel(LogLevel.Verbose)
+    }
     private val client: HttpClient = httpClient {
         install(ContentNegotiation) {
             /*serializer = KotlinxSerializer(Json {
@@ -56,7 +59,7 @@ class SharedSDK(driverFactory: DatabaseDriverFactory,val platform: BaseApplicati
 
     private val interactor: SharedInteractor = SharedInteractorImpl(sharedRepository, serializer)
 
-    val gateway: SDKGateway = SDKGateway(interactor)
+    val gateway: SDKGateway = SDKGateway(interactor,platform)
 
 }
 internal class AutoUpdateDelegate<T>(private val onChange: (T) -> Unit) :

@@ -40,11 +40,15 @@ kotlin {
         iosX64(),
         iosArm64(),
     )
-//    iosSupported.forEach {
-//        it.compilations.forEach {
-//            it.kotlinOptions.freeCompilerArgs += arrayOf("-linker-options", "-lsqlite3")
-//        }
-//    }
+    iosSupported.forEach {
+       it.binaries {
+              framework {
+                baseName = "shared"
+                isStatic = true
+                export("org.lighthousegames:logging:1.3.0")
+              }
+       }
+    }
 
 //    iosSimulatorArm64() // TXIMSDK_Plus_iOS 不支持虚拟机,TXIMSDK_Plus_iOS_XCFramework 又无法使用
     applyDefaultHierarchyTemplate() // this one
@@ -73,6 +77,7 @@ kotlin {
             baseName = "shared"
             isStatic = true
         }
+        pod("Reachability", "~> 3.2")
         pod("Flutter"){
             packageName="io.flutter.embedding.engine"
         }
@@ -112,6 +117,14 @@ kotlin {
                 implementation(libs.ktor.client.json)
                 implementation(libs.ktor.client.serialization)
 
+
+                implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
+                implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
+
+                api(libs.logging)
+                implementation("co.touchlab:stately-common:2.0.0")
+
+
                 api(kotlin("reflect"))
 
                 implementation(libs.sqldelight.runtime)
@@ -149,6 +162,8 @@ kotlin {
             languageSettings.apply {
                 // Required for CPointer etc. since Kotlin 1.9.
                 optIn("kotlinx.serialization.ExperimentalSerializationApi")
+                optIn("kotlinx.cinterop.BetaInteropApi")
+                optIn("kotlinx.serialization.InternalSerializationApi")
                 optIn("kotlinx.cinterop.ExperimentalForeignApi")
             }
         }

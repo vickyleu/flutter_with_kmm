@@ -15,6 +15,13 @@ class Interactor {
     setPlatformCallsListeners();
   }
 
+  Future<bool> isInternetGranted() async {
+    return await doOnKMM(() async {
+      bool isGranted = (await Gateway.isInternetGranted() as bool?) ?? false;
+      print("isGranted::$isGranted");
+      return isGranted;
+    });
+  }
   Future<List<User>?> getUsers(int page, int results) async {
     return doOnKMM(() async {
       String? users = await Gateway.getUsers(page, results);
@@ -50,6 +57,7 @@ class Interactor {
       errorStream.add(e.message ?? 'Unknown error');
       updateProgress(false);
     }
+    return null;
   }
 
 }
