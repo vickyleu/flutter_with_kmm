@@ -1,6 +1,9 @@
 [versions]
 autosize = "v1.2.1"
+kotlinxDatetime = "0.5.0"
 logging = "1.3.0"
+settings = "1.1.1"
+statelyCommon = "2.0.0"
 tencent-imsdk = "7.6.5021"
 jdk = "17"
 agp = "8.2.0"
@@ -19,7 +22,10 @@ androidTargetSdkMinimal = "34"
 
 
 [libraries]
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 logging = { module = "org.lighthousegames:logging", version.ref = "logging" }
+settings-noarg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
+stately-common = { module = "co.touchlab:stately-common", version.ref = "statelyCommon" }
 tencent-imsdk = { group="com.tencent.imsdk", name = "imsdk-plus", version.ref = "tencent-imsdk" }
 kotlin-test = { group="org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlin-reflect = { group="org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }

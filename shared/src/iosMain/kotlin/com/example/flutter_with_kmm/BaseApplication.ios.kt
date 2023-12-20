@@ -1,20 +1,21 @@
 package com.example.flutter_with_kmm
 
+import com.example.flutter_with_kmm.domain.SDKNetworkType
+import com.example.flutter_with_kmm.domain.getCurrentNetworkType
 import com.example.flutter_with_kmm.utils.pref
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterMethodChannel
 import io.flutter.embedding.engine.FlutterStandardMethodCodec
 import io.flutter.embedding.engine.FlutterViewController
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.lighthousegames.logging.logging
 import platform.CoreFoundation.CFRunLoopGetCurrent
 import platform.CoreFoundation.kCFRunLoopDefaultMode
 import platform.CoreTelephony.CTCellularData
+import platform.CoreTelephony.CTCellularDataRestrictedState
 import platform.SystemConfiguration.SCNetworkReachabilityCreateWithName
 import platform.SystemConfiguration.SCNetworkReachabilityRef
 import platform.SystemConfiguration.SCNetworkReachabilityScheduleWithRunLoop
@@ -51,7 +52,7 @@ actual class BaseApplication(
     private fun handleFlutterEngineChange(engine: FlutterEngine) {
         // 在这里执行变量发生变化时的操作
         // 例如，可以在这里触发相应的操作或通知
-        println("FlutterEngine changed: $engine")
+        logger.e { "FlutterEngine changed: $engine" }
         val binaryMessenger = engine.binaryMessenger
         val methodChannel = FlutterMethodChannel(
             name = SharedSDK.CHANNEL,
@@ -69,7 +70,7 @@ actual class BaseApplication(
 //        controller.addObserver(this,"", NSKeyValueObservingOptionNew,null)
     }
 
-    private var isFirstRun by pref(true)
+    internal var isFirstRun by pref(true)
 
     init {
         if (UIDevice.currentDevice.systemVersion.toFloat() >= 10.0 && !isSimulator()) {
@@ -80,28 +81,21 @@ actual class BaseApplication(
                 CFRunLoopGetCurrent(),
                 kCFRunLoopDefaultMode
             )
-            _cellularData.cellularDataRestrictionDidUpdateNotifier = { state ->
-                if (state.ordinal == 0) {
-                    println("网络权限已开启")
-                } else if (state.ordinal == 1) {
-                    println("网络权限已关闭")
-                } else {
-                    println("网络权限未知")
-                }
-            }
-            logger.error { "isFirstRun:1:${isFirstRun}" }
-            if (isFirstRun) {
-                GlobalScope.launch {
-                    logger.error { "网络检测" }
-                    withContext(Dispatchers.IO) {
-                        waitActive()
-                    }
-                }
-                logger.error { "isFirstRun:2:${isFirstRun}" }
-                isFirstRun = false
-            }
+            /* _cellularData.setCellularDataRestrictionDidUpdateNotifier {
+                 logger.e { "state:$it" }
+                 if (it.ordinal == 0) {
+                     logger.e { "网络权限已开启" }
+                 } else if (it.ordinal == 1) {
+                     logger.e {"网络权限已关闭"}
+                 } else {
+                     logger.e {"网络权限未知"}
+                 }
+             }*/
+
+
         }
     }
+
 
 
     internal suspend fun waitActive() {
@@ -109,6 +103,13 @@ actual class BaseApplication(
             delay(3.seconds)
             return@withContext withContext(Dispatchers.Main) {
                 if (app.applicationState == UIApplicationState.UIApplicationStateActive) {
+                    /*  val state = _cellularData.restrictedState()
+                      when(state){
+                          CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> TODO()
+                          CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> TODO()
+                          CTCellularDataRestrictedState.kCTCellularDataRestricted -> TODO()
+                          else -> TODO()
+                      }*/
                     logger.error { "网络已连接" }
                 } else {
                     logger.error { "网络异常" }
@@ -121,4 +122,6 @@ actual class BaseApplication(
     internal fun isSimulator(): Boolean {
         return TARGET_OS_SIMULATOR == 1
     }
+
+
 }

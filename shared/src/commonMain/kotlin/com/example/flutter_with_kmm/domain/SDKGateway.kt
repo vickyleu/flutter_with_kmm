@@ -12,7 +12,7 @@ expect suspend fun SDKGateway.isInternetGranted(): Boolean
 
 class SDKGateway(private val interactor: SharedInteractor, internal val platform: BaseApplication) {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     fun processCall(method: String, arguments: Any?, callHandler: CallHandler) {
 
@@ -41,9 +41,9 @@ class SDKGateway(private val interactor: SharedInteractor, internal val platform
                     }
 
                     "isInternetGranted" -> {
+//                        this@SDKGateway.platform.logger.error { "第一次请求的时长:${}" }
                         val isGranted = isInternetGranted()
                         withContext(Dispatchers.Main) {
-                            println("isInternetGranted:::$isGranted")
                             callHandler.success(isGranted)
                         }
                     }

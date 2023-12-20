@@ -60,12 +60,8 @@ class Pref<T : Any>(private val key: String?, private val default: T) {
 
             Boolean::class -> {
                 if (settings.hasKey(key = (key ?: property.name))) {
-                    logger.e { "key:::${key ?: property.name}  default:$default" }
-                    val b = settings.getBoolean(key = (key ?: property.name), default as Boolean)
-                    logger.e { "b:::$b" }
-                    b as T
+                    settings.getBoolean(key = (key ?: property.name), default as Boolean) as T
                 } else {
-                    logger.e { " default:$default" }
                     default
                 }
             }

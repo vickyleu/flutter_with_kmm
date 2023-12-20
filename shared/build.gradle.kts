@@ -118,11 +118,11 @@ kotlin {
                 implementation(libs.ktor.client.serialization)
 
 
-                implementation("com.russhwolf:multiplatform-settings-no-arg:1.1.1")
+                implementation(libs.settings.noarg)
                 implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
-
+                implementation(libs.kotlinx.datetime)
                 api(libs.logging)
-                implementation("co.touchlab:stately-common:2.0.0")
+                implementation(libs.stately.common)
 
 
                 api(kotlin("reflect"))
@@ -145,7 +145,7 @@ kotlin {
                 //noinspection UseTomlInstead
                 compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
                 api(libs.tencent.imsdk)
-                api("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+//                api("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
             }
         }
         val iosMain by getting {
