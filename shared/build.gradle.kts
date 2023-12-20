@@ -35,10 +35,11 @@ kotlin {
 
     iosX64()
     iosArm64()
-
+    iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
     val iosSupported = listOf(
         iosX64(),
         iosArm64(),
+        iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
     )
     iosSupported.forEach {
        it.binaries {
@@ -49,8 +50,6 @@ kotlin {
               }
        }
     }
-
-//    iosSimulatorArm64() // TXIMSDK_Plus_iOS 不支持虚拟机,TXIMSDK_Plus_iOS_XCFramework 又无法使用
     applyDefaultHierarchyTemplate() // this one
 
     metadata {
@@ -67,12 +66,6 @@ kotlin {
         version = "1.0"
         ios.deploymentTarget = "12.0"
         podfile = project.file("../ios/Podfile")
-//        framework {
-//            baseName = "shared"
-//            isStatic = true
-//            transitiveExport = false
-//            embedBitcode(BitcodeEmbeddingMode.DISABLE)
-//        }
         framework {
             baseName = "shared"
             isStatic = true
@@ -81,15 +74,14 @@ kotlin {
         pod("Flutter"){
             packageName="io.flutter.embedding.engine"
         }
-        pod("TXIMSDK_Plus_iOS") {
+//        pod("TXIMSDK_Plus_iOS") {
             // xcframework 无法正常导入
-//        pod("TXIMSDK_Plus_iOS_XCFramework") {
+      pod("TXIMSDK_Plus_iOS_XCFramework") {
             version = libs.versions.tencent.imsdk.get()
             packageName = "ImSDK_Plus" // 定义导出的kotlin包名,不写就会变成cocoapods.${moduleName}.xxx
             // 这个moduleName一定要和 framework 的名称一致，或者说与 def 里的一致，不然，无法正确的完成 cinterop
             moduleName = "ImSDK_Plus" // 参考/build/shared/cocoapods/defs/里面的modules名称,没有后缀
             // XCFramework 无法找到,需要手动指定路径,
-
             val xcFrameworkPathDir = project.layout.buildDirectory.get()
                 .asFile.resolve("cocoapods/synthetic/ios/Pods/TXIMSDK_Plus_iOS_XCFramework/ImSDK_Plus.xcframework")
             extraOpts = listOf(
@@ -98,7 +90,6 @@ kotlin {
                 "-Xuser-setup-hint", "<<xcframework import is  unavailable>>",
 //                "-libraryPath", xcFrameworkPathDir.absolutePath
             )
-//            this.source=CocoapodsExtension.CocoapodsDependency.PodLocation.Path(xcFrameworkPathDir)
         }
         extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
         extraSpecAttributes["resources"] =
@@ -119,7 +110,7 @@ kotlin {
 
 
                 implementation(libs.settings.noarg)
-                implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
+//                implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
                 implementation(libs.kotlinx.datetime)
                 api(libs.logging)
                 implementation(libs.stately.common)
@@ -169,8 +160,10 @@ kotlin {
         }
     }
 
-
-    /*compilerOptions {
+    compilerOptions { //  kotlin
+        freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
+    }
+    /*compilerOptions { //  kotlin
         freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
     }*/
 }
@@ -200,7 +193,7 @@ tasks.withType<PodGenTask>().configureEach {
 }
 tasks.withType<PodspecTask>().configureEach {
     doLast {
-        // podspec cannot ref framework from parent dir, so we need to copy symbol link to current dir
+        //TODO  podspec cannot ref framework from parent dir, so we need to copy symbol link to current dir
         outputFile.apply {
             CocoapodsAppender.Builder(this)
                 .replace(
@@ -228,9 +221,7 @@ tasks.withType<PodspecTask>().configureEach {
             .start().apply {
                 waitFor()
             }.inputStream.bufferedReader()
-            .readText().apply {
-                println("link shared.framework result:$this")
-            }
+            .readText()
     }
 }
 android {
