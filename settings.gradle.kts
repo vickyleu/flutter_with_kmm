@@ -7,7 +7,10 @@ import java.nio.file.Path
 import kotlin.io.path.exists
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
+
+    println("settings执行前")
     listOf(repositories, dependencyResolutionManagement.repositories).forEach {
         it.apply {
             google {
@@ -31,17 +34,10 @@ pluginManagement {
             }
         }
     }
-    var flutterVersion = ""
+    var sdkPathExists = false
 
-    fun flutterSdkPath(): String? {
-        val properties = java.util.Properties()
-        file("local.properties").inputStream().use { properties.load(it) }
-        val flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert(flutterSdkPath != null) {
-            "flutter.sdk not set in local.properties"
-        }
-
-         data class FlutterPatch(
+    fun applyFlutterPatch(): String {
+        data class FlutterPatch(
             val title: String,
             val content: String,
             val sourceLocation: String,
@@ -49,15 +45,45 @@ pluginManagement {
             val description: String,
             val version: String
         )
+        val properties = java.util.Properties()
+        file("local.properties").inputStream().use { properties.load(it) }
+        val flutterSdkPath = properties.getProperty("flutter.sdk")
+        assert(flutterSdkPath != null) {
+            "flutter.sdk not set in local.properties"
+        }
+        //需要兼容Windows,macos,linux
+        //should absolute path by xcode analyze,https://github.com/flutter/flutter/issues/110069#issuecomment-1223963568
+        val flutterVersionCommand =
+            if (System.getProperty("os.name").lowercase(java.util.Locale.getDefault())
+                    .contains("windows")
+            ) {
+                "cmd /c ${flutterSdkPath}\\bin\\flutter --version"
+            } else {
+                "${flutterSdkPath}/bin/flutter --version"
+            }
+        // 在gradle kts中执行这段命令,然后的得到结果
+        val flutterVersionResult =
+            ProcessBuilder(flutterVersionCommand.split(" ")).start().inputStream.bufferedReader()
+                .readText()
+        // 通过正则表达式获取flutter的版本号
+        val flutterVersion =
+            Regex("Flutter\\s+(\\d+\\.\\d+\\.\\d+)").find(flutterVersionResult)?.groupValues?.get(1)
+                ?: ""
+        // 判断版本号是否正常获取了
+        if (flutterVersion.isBlank()) {
+            throw RuntimeException("flutter version cannot be obtained normally")
+        }
+        println("flutterVersion:$flutterVersion")
 
-         val patches = listOf(
+
+        val patches = listOf(
             FlutterPatch(
                 title = "Fix Kotlin DSL bug",
                 content = "由于Flutter官方存在kotlin DSL解析的bug",
                 sourceLocation = "packages/flutter_tools/lib/src",
                 patchLocation = "project.dart",
                 description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译",
-                version = "3.16.3"
+                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -65,7 +91,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib",
                 patchLocation = "executable.dart",
                 description = "否则当前项目无法正常被编译",
-                version = "3.16.3"
+                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -73,7 +99,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle.dart",
                 description = "否则当前项目无法正常被编译",
-                version = "3.16.3"
+                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix agp plugin too high error",
@@ -81,13 +107,14 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle_utils.dart",
                 description = "否则当前项目无法正常被编译",
-                version = "3.16.3"
+                version = flutterVersion
             )
         )
         fun setupFlutterPatch(flutterSdkPath: String) {
             patches.forEach {
                 val replaceFile = file("patch/${it.version}/${it.patchLocation}")
-                val conflictDartSource = file("${flutterSdkPath}/${it.sourceLocation}/${it.patchLocation}")
+                val conflictDartSource =
+                    file("${flutterSdkPath}/${it.sourceLocation}/${it.patchLocation}")
                 if (!replaceFile.exists()) {
                     throw Exception("${replaceFile.absolutePath} 文件是不能删除的!!!!")
                 }
@@ -131,38 +158,15 @@ pluginManagement {
             }
         }
         setupFlutterPatch(flutterSdkPath)
+        //flutterSdkPath 返回的是flutter的目录(/Volumes/Extra/flutter),下面通过命令行获取flutter的版本号
+        println("flutterSdkPath:$flutterSdkPath")
+        settings.extra["flutterSdkPath"] = flutterSdkPath
+        includeBuild("${flutterSdkPath}/packages/flutter_tools/gradle")
+        sdkPathExists=true
         return flutterSdkPath
     }
-
-    var sdkPathExists = false
-    flutterSdkPath()?.apply {
-        sdkPathExists = true
-        //flutterSdkPath 返回的是flutter的目录(/Volumes/Extra/flutter),下面通过命令行获取flutter的版本号
-        println("flutterSdkPath:$this")
-        //需要兼容Windows,macos,linux
-        //should absolute path by xcode analyze,https://github.com/flutter/flutter/issues/110069#issuecomment-1223963568
-        val flutterVersionCommand =
-            if (System.getProperty("os.name").lowercase(java.util.Locale.getDefault()).contains("windows")) {
-                "cmd /c ${this}\\bin\\flutter --version"
-            } else {
-                "${this}/bin/flutter --version"
-            }
-        // 在gradle kts中执行这段命令,然后的得到结果
-        val flutterVersionResult =
-            ProcessBuilder(flutterVersionCommand.split(" ")).start().inputStream.bufferedReader()
-                .readText()
-        // 通过正则表达式获取flutter的版本号
-        flutterVersion =
-            Regex("Flutter\\s+(\\d+\\.\\d+\\.\\d+)").find(flutterVersionResult)?.groupValues?.get(1)
-                ?: ""
-        // 判断版本号是否正常获取了
-        if (flutterVersion.isBlank()) {
-            throw RuntimeException("flutter version cannot be obtained normally")
-        }
-        println("flutterVersion:$flutterVersion")
-        settings.extra["flutterSdkPath"] = this
-        includeBuild("${this}/packages/flutter_tools/gradle")
-    }
+    applyFlutterPatch()
+    println("settings执行后")
     plugins {
         if (sdkPathExists) {
             id("dev.flutter.flutter-plugin-loader") version "1.0.0" // settings plugin, only work for settings.gradle

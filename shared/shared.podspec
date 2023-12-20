@@ -11,7 +11,7 @@ Pod::Spec.new do |spec|
     spec.ios.deployment_target = '12.0'
     spec.dependency 'Flutter'
     spec.dependency 'Reachability', '~> 3.2'
-    spec.dependency 'TXIMSDK_Plus_iOS_XCFramework', '7.6.5021'
+    spec.dependency 'TXIMSDK_Plus_iOS', '7.6.5021'
                 
     if !Dir.exist?('../build/shared/cocoapods/framework/shared.framework') || Dir.empty?('../build/shared/cocoapods/framework/shared.framework')
         raise "

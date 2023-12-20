@@ -1,16 +1,21 @@
 package com.example.flutter_with_kmm.domain
 
 import com.example.flutter_with_kmm.BaseApplication
+import com.example.flutter_with_kmm.utils.DateTimeFormatter
+import com.example.flutter_with_kmm.utils.dateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 expect suspend fun SDKGateway.isInternetGranted(): Boolean
 
-class SDKGateway(private val interactor: SharedInteractor, internal val platform: BaseApplication) {
+class SDKGateway(internal val interactor: SharedInteractor, internal val platform: BaseApplication) {
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -41,8 +46,10 @@ class SDKGateway(private val interactor: SharedInteractor, internal val platform
                     }
 
                     "isInternetGranted" -> {
-//                        this@SDKGateway.platform.logger.error { "第一次请求的时长:${}" }
+                        val dtf=DateTimeFormatter("yyyy-MM-dd HH:mm:ss")
+                        this@SDKGateway.platform.logger.error { "第一次请求的时长:${dtf.format(Clock.System.now().dateTime())}" }
                         val isGranted = isInternetGranted()
+                        this@SDKGateway.platform.logger.error { "第一次请求完成的时长:${dtf.format(Clock.System.now().dateTime())}" }
                         withContext(Dispatchers.Main) {
                             callHandler.success(isGranted)
                         }
@@ -65,6 +72,9 @@ class SDKGateway(private val interactor: SharedInteractor, internal val platform
     fun setCallbacks(callback: CallbackHandler) {
         interactor.setUsersUpdatesListener {
             callback.invokeMethod("users", it)
+        }
+        interactor.setNativeCallbackListener {method,map->
+            callback.invokeMethod("nativeCallback", mapOf("method" to method,"args" to map))
         }
     }
 

@@ -23,11 +23,14 @@ class UsersCubit extends Cubit<UsersState> {
         interactor.updateProgress(false);
       }
     } else {
+      interactor.retry(() {
+        print("retry getUsers");
+        getUsers();
+      });
       print("No internet connection\n");
       interactor.errorStream.add('No internet connection');
       // emit(UsersError(errorText: 'No internet connection'));
     }
-
   }
 
 }

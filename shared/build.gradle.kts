@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.accessors.runtime.addConfiguredDependencyTo
+import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -35,11 +37,11 @@ kotlin {
 
     iosX64()
     iosArm64()
-    iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
+//    iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
     val iosSupported = listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
+//        iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
     )
     iosSupported.forEach {
        it.binaries {
@@ -74,9 +76,9 @@ kotlin {
         pod("Flutter"){
             packageName="io.flutter.embedding.engine"
         }
-//        pod("TXIMSDK_Plus_iOS") {
+        pod("TXIMSDK_Plus_iOS") {
             // xcframework 无法正常导入
-      pod("TXIMSDK_Plus_iOS_XCFramework") {
+//      pod("TXIMSDK_Plus_iOS_XCFramework") {
             version = libs.versions.tencent.imsdk.get()
             packageName = "ImSDK_Plus" // 定义导出的kotlin包名,不写就会变成cocoapods.${moduleName}.xxx
             // 这个moduleName一定要和 framework 的名称一致，或者说与 def 里的一致，不然，无法正确的完成 cinterop
@@ -110,7 +112,7 @@ kotlin {
 
 
                 implementation(libs.settings.noarg)
-//                implementation("com.github.ln-12:multiplatform-connectivity-status:1.2.0")
+                implementation(libs.connectivity)
                 implementation(libs.kotlinx.datetime)
                 api(libs.logging)
                 implementation(libs.stately.common)
@@ -129,14 +131,18 @@ kotlin {
         }
         val androidMain by getting {
             dependsOn(commonMain)
+//            fun KotlinDependencyHandler.`coreLibraryDesugaring`(dependencyNotation: Any): Dependency{
+//                this.project.configurations.register("coreLibraryDesugaring"){
+//                    this.dependencies.add(dependencyNotation)
+//                }
+//                return  add("coreLibraryDesugaring", dependencyNotation)
+//            }
             dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.sqldelight.android.driver)
-                val flutterVersion= latestFlutterVersion()
                 //noinspection UseTomlInstead
-                compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
+                compileOnly("io.flutter:flutter_embedding_debug:${project.latestFlutterVersion()}")
                 api(libs.tencent.imsdk)
-//                api("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
             }
         }
         val iosMain by getting {
@@ -229,6 +235,12 @@ android {
     namespace = "com.example.kmmsharedmodule"
     defaultConfig {
         minSdk = 25
+    }
+    compileOptions {
+//        isCoreLibraryDesugaringEnabled = true
+        val java = JavaVersion.toVersion(libs.versions.jdk.get())
+        sourceCompatibility = java
+        targetCompatibility = java
     }
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     buildTypes {

@@ -110,7 +110,7 @@ android {
         }
     }
     buildFeatures {
-        dataBinding = true
+//        dataBinding = true
         buildConfig = true
     }
     compileOptions {
@@ -146,10 +146,8 @@ extensions.configure<FlutterExtension>("flutter") {
 }
 
 dependencies {
-//    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version")
-//    implementation(libs.kotlin.coroutines)
-//    implementation(libs.kotlinx.coroutines.android)
     implementation(project(":shared"))
     //noinspection UseTomlInstead
     compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
+//    coreLibraryDesugaring(libs.desugar)
 }

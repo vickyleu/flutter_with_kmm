@@ -19,6 +19,7 @@ plugins {
     alias(libs.plugins.flutter.plugin) apply false
 //    alias(libs.plugins.flutter.loader)
 }
+
 val javaVersion = JavaVersion.toVersion(libs.versions.jdk.get())
 check(JavaVersion.current().isCompatibleWith(javaVersion)) {
     "This project needs to be run with Java ${javaVersion.getMajorVersion()} or higher (found: ${JavaVersion.current()})."

@@ -9,6 +9,7 @@ class Interactor {
 
   StreamController<String> errorStream = StreamController<String>.broadcast();
   StreamController<bool> progressStream = StreamController<bool>.broadcast();
+  StreamController<Map<String,dynamic>> nativeStream = StreamController<Map<String,dynamic>>.broadcast();
   final usersStream = BehaviorSubject<List<User>>();
 
   init() async{
@@ -22,6 +23,8 @@ class Interactor {
       return isGranted;
     });
   }
+
+  List get nativeMethod  => [isInternetGranted];
   Future<List<User>?> getUsers(int page, int results) async {
     return doOnKMM(() async {
       String? users = await Gateway.getUsers(page, results);
@@ -43,7 +46,15 @@ class Interactor {
           User.fromJson(model)).toList();
       usersStream.add(users);
     };
-    Gateway.setPlatformCallsListeners(onUsersUpdate);
+    var onNativeCall = (Map<String,dynamic> result) {
+      nativeMethod.forEach((element) {
+        print("element::${element.toString()}");
+      });
+      if(result['method'] == 'isInternetGranted'){
+        nativeStream.add(result);
+      }
+    };
+    Gateway.setPlatformCallsListeners(onUsersUpdate,onNativeCall);
   }
 
   updateProgress(bool state) {
@@ -58,6 +69,18 @@ class Interactor {
       updateProgress(false);
     }
     return null;
+  }
+
+  void retry(VoidCallback callback) {
+    // 只监听一次
+    StreamSubscription<Map<String, dynamic>>? sub;
+    sub= nativeStream.stream.listen((Map<String,dynamic> result) {
+      if(result['method'] == 'isInternetGranted'){
+        callback();
+        sub?.cancel();
+        sub=null;
+      }
+    });
   }
 
 }

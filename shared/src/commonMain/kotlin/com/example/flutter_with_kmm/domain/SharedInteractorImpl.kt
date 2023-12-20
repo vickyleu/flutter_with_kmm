@@ -29,6 +29,7 @@ class SharedInteractorImpl(
         }
     }
 
+
     override suspend fun users(page: Int, results: Int): String =
         serializer.encodeToString(sharedRepository.users(page, results))
 
@@ -39,6 +40,21 @@ class SharedInteractorImpl(
 
     override fun destroy() {
         scope.cancel()
+    }
+
+    override fun setNativeCallbackListener(listener: (String, Map<String, Any>) -> Unit) {
+        scope.launch {
+            sharedRepository.nativeCallbackFlow.collect {
+                withContext(Dispatchers.Main) {
+                    listener(it.first,it.second)
+                }
+            }
+        }
+    }
+    override suspend fun callBridge(method: String, argument: Map<String, Any>) {
+        withContext(Dispatchers.Default){
+            sharedRepository.nativeCallbackFlow.tryEmit(method to argument)
+        }
     }
 
 }

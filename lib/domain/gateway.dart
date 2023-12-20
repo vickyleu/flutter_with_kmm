@@ -15,11 +15,13 @@ class Gateway {
     return platform.invokeMethod("saveUser", jsonEncode(user));
   }
 
-  static setPlatformCallsListeners(Function onUsersUpdate){
+  static setPlatformCallsListeners(Function onUsersUpdate,Function(Map<String,dynamic> map) onNativeCall){
     platform.setMethodCallHandler((call) {
       if (call.method == 'users' ) {
         String result = call.arguments as String;
         onUsersUpdate(result);
+      }else if (call.method == 'nativeCallback' ) {
+        onNativeCall(call.arguments);
       }
       return Future.value();
     });
