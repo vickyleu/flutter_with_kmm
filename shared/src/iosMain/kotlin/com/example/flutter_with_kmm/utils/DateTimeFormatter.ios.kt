@@ -7,6 +7,7 @@ import platform.Foundation.NSCalendar
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateFormatter
 
+@Throws(IllegalStateException::class)
 actual fun LocalDateTime.format(format: String): String? {
     val dateFormatter = NSDateFormatter()
     dateFormatter.dateFormat = format

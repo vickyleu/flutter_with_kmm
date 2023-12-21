@@ -21,7 +21,12 @@ import kotlin.reflect.jvm.isAccessible
 class AppDelegate : Application() {
     private val platform = BaseApplication(this) {
         it.setMethodCallHandler { call, result ->
-            gateway.processCall(call.method, call.arguments, CallHandlerImpl(result))
+            try {
+                gateway.processCall(call.method, call.arguments, CallHandlerImpl(result))
+            }catch (e:Exception){
+                e.printStackTrace()
+                result.error("error",e.message,e)
+            }
         }
         gateway.setCallbacks(CallbackHandlerImpl(it))
     }

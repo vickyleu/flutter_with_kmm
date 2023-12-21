@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_with_kmm/entities/user.dart';
+import '../common/constants.dart';
 import 'gateway.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -24,7 +25,9 @@ class Interactor {
     });
   }
 
-  List get nativeMethod  => [isInternetGranted];
+
+
+  List get nativeMethod  => [InternetGranted];
   Future<List<User>?> getUsers(int page, int results) async {
     return doOnKMM(() async {
       String? users = await Gateway.getUsers(page, results);
@@ -46,11 +49,9 @@ class Interactor {
           User.fromJson(model)).toList();
       usersStream.add(users);
     };
+
     var onNativeCall = (Map<String,dynamic> result) {
-      nativeMethod.forEach((element) {
-        print("element::${element.toString()}");
-      });
-      if(result['method'] == 'isInternetGranted'){
+      if(nativeMethod.contains(result['method'])){
         nativeStream.add(result);
       }
     };
@@ -75,10 +76,24 @@ class Interactor {
     // 只监听一次
     StreamSubscription<Map<String, dynamic>>? sub;
     sub= nativeStream.stream.listen((Map<String,dynamic> result) {
-      if(result['method'] == 'isInternetGranted'){
-        callback();
-        sub?.cancel();
-        sub=null;
+      final String method = result['method'];
+      if(method == InternetGranted){
+        final Map<String,dynamic> args = result['args'] as Map<String,dynamic>;
+        final SDKNetworkGrantedType type =SDKNetworkGrantedType.fromString(args['Granted']);
+        print("type::${type.toString()}  result:${args.toString()}}");
+        switch(type){
+          case SDKNetworkGrantedType.Accessible:{
+            callback();
+            sub?.cancel();
+            sub=null;
+          }
+          case SDKNetworkGrantedType.Restricted:{
+
+          }
+          case SDKNetworkGrantedType.Unknown:{
+
+          }
+        }
       }
     });
   }

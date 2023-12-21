@@ -25,6 +25,7 @@ class UsersCubit extends Cubit<UsersState> {
     } else {
       interactor.retry(() {
         print("retry getUsers");
+        interactor.updateProgress(false);
         getUsers();
       });
       print("No internet connection\n");

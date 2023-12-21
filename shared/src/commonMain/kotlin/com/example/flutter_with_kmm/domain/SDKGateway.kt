@@ -19,6 +19,7 @@ class SDKGateway(internal val interactor: SharedInteractor, internal val platfor
 
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
+    @Throws(Exception::class)
     fun processCall(method: String, arguments: Any?, callHandler: CallHandler) {
 
         platform.logger.error { "processCall method:::$method" }
@@ -47,12 +48,20 @@ class SDKGateway(internal val interactor: SharedInteractor, internal val platfor
 
                     "isInternetGranted" -> {
                         val dtf=DateTimeFormatter("yyyy-MM-dd HH:mm:ss")
-                        this@SDKGateway.platform.logger.error { "第一次请求的时长:${dtf.format(Clock.System.now().dateTime())}" }
-                        val isGranted = isInternetGranted()
-                        this@SDKGateway.platform.logger.error { "第一次请求完成的时长:${dtf.format(Clock.System.now().dateTime())}" }
-                        withContext(Dispatchers.Main) {
-                            callHandler.success(isGranted)
+                        try {
+                            this@SDKGateway.platform.logger.error { "第一次请求的时长:${dtf.format(Clock.System.now().dateTime())}" }
+                            val isGranted = isInternetGranted()
+                            this@SDKGateway.platform.logger.error { "第一次请求完成的时长:${dtf.format(Clock.System.now().dateTime())}" }
+                            withContext(Dispatchers.Main) {
+                                callHandler.success(isGranted)
+                            }
+                        }catch (e:Exception){
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                callHandler.error("${e.message}")
+                            }
                         }
+
                     }
 
                     else -> {
@@ -74,7 +83,8 @@ class SDKGateway(internal val interactor: SharedInteractor, internal val platfor
             callback.invokeMethod("users", it)
         }
         interactor.setNativeCallbackListener {method,map->
-            callback.invokeMethod("nativeCallback", mapOf("method" to method,"args" to map))
+            val arguments:Map<String,Any> = mapOf("method" to method, "args" to map)
+            callback.invokeMethod("nativeCallback", arguments)
         }
     }
 

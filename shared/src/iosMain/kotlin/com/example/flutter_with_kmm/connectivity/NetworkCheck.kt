@@ -47,61 +47,55 @@ import kotlin.time.Duration.Companion.seconds
 
 internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
     if (this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier == null) {
-        this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier = {
-            this.platform.logger.e { "state:$it" }
+        this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier = block@{
             scope.launch {
                 withContext(Dispatchers.IO) {
-                    when (it) {
-                        CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {
-                            this@restrictedState.platform.logger.e { "网络权限已开启" }
-                            this@restrictedState.interactor.callBridge(
-                                InternetGranted,
-                                mapOf(GrantedType to SDKNetworkGrantedType.Accessible)
-                            )
-                        }
+                    try {
+                        when (it) {
+                            CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {
+                                this@restrictedState.interactor.callBridge(
+                                    InternetGranted,
+                                    mapOf(GrantedType to SDKNetworkGrantedType.Accessible.name)
+                                )
+                            }
+                            CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {
+                                this@restrictedState.interactor.callBridge(
+                                    InternetGranted,
+                                    mapOf(GrantedType to SDKNetworkGrantedType.Unknown.name)
+                                )
+                            }
+                            CTCellularDataRestrictedState.kCTCellularDataRestricted -> {
+                                // 关闭没有通知
+                                 this@restrictedState.interactor.callBridge(
+                                     InternetGranted,
+                                     mapOf(GrantedType to SDKNetworkGrantedType.Restricted.name)
+                                 )
+                            }
 
-                        CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {
-                            this@restrictedState.platform.logger.e { "网络权限未知" }
-                            this@restrictedState.interactor.callBridge(
-                                InternetGranted,
-                                mapOf(GrantedType to SDKNetworkGrantedType.Unknown)
-                            )
+                            else -> Unit
                         }
-
-                        CTCellularDataRestrictedState.kCTCellularDataRestricted -> {
-                            this@restrictedState.platform.logger.e { "网络权限已关闭" }
-                            this@restrictedState.interactor.callBridge(
-                                InternetGranted,
-                                mapOf(GrantedType to SDKNetworkGrantedType.Restricted)
-                            )
-                        }
-
-                        else -> Unit
+                    }catch (e:Exception){
+                        e.printStackTrace()
                     }
                 }
             }
         }
-        this.platform.logger.e { "网络权限监听已开启 ${this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier}" }
-//        CellularDataRestrictionDidUpdateNotifierVar
-        /*this.platform._cellularData.setCellularDataRestrictionDidUpdateNotifier {
-
-        }*/
     }
     if (this.platform.isFirstRun) {
-        this.platform.logger.error { "网络检测" }
         return withContext(Dispatchers.IO) {
             this@restrictedState.platform.waitActive()
             this@restrictedState.platform.isFirstRun = false
             restrictedState(delay=true)
         }
-    } else {
+    }
+    else {
         return when (this@restrictedState.platform._cellularData.restrictedState()) {
             CTCellularDataRestrictedState.kCTCellularDataRestricted -> {// 无蜂窝数据,访问受限制
                 this@restrictedState.platform.logger.error { ":::::>>>>>>:::::无蜂窝数据访问权限" }
                 val type = getCurrentNetworkType()
                 /*  若用户是通过蜂窝数据 或 WLAN 上网，走到这里来 说明权限被关闭 SDKNetworkGrantedType.Restricted **/
                 // 可能开了飞行模式，无法判断 SDKNetworkGrantedType.Unknown
-                type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI
+                (type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI)
             }
 
             CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {// 蜂窝数据访问不受限制，那就必定有 Wi-Fi 数据访问权限
@@ -235,19 +229,24 @@ suspend fun SDKGateway.wiFiIPAddress(): String? {
         }
         return ipAddress
     } catch (e: Exception) {
+        e.printStackTrace()
         return null
     }
 }
 
 suspend fun SDKGateway.currentReachable(): Boolean {
-    if (UIDevice.currentDevice.systemVersion.toFloat() < 10.0 || this.platform.isSimulator()) {
+    if (!available(10.0f) || this.platform.isSimulator()) {
         return true
     }
-    val flags = nativeHeap.alloc<SCNetworkReachabilityFlagsVar>()
-    if (SCNetworkReachabilityGetFlags(this.platform._reachabilityRef, flags.ptr)) {
-        val f = flags.value.toInt()
-        nativeHeap.free(flags.rawPtr)
-        return (f and kSCNetworkReachabilityFlagsReachable.toInt()) != 0
+    try {
+        val flags = nativeHeap.alloc<SCNetworkReachabilityFlagsVar>()
+        if (SCNetworkReachabilityGetFlags(this.platform._reachabilityRef, flags.ptr)) {
+            val f = flags.value.toInt()
+            nativeHeap.free(flags.rawPtr)
+            return (f and kSCNetworkReachabilityFlagsReachable.toInt()) != 0
+        }
+    }catch (e:Exception){
+        e.printStackTrace()
     }
     return false
 }

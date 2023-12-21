@@ -10,7 +10,12 @@ class DateTimeFormatter(private val format: String) {
         return format.parse(date)
     }
     fun format(date: LocalDateTime): String? {
-        return date.format(format)
+        try {
+            return date.format(format)
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
+        return null
     }
 }
 
@@ -19,4 +24,5 @@ fun Instant.dateTime():LocalDateTime{
 }
 
 internal expect fun String.parse(time: String): LocalDateTime?
+
 expect fun LocalDateTime.format(format: String): String?

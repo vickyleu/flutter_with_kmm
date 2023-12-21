@@ -23,7 +23,12 @@ import shared
             // 你可以使用传递进来的 flutterMethodChannel 进行处理
             flutterMethodChannel.setMethodCallHandler {  call, result in
                 if let gateway = self.gateway {
-                    gateway.processCall(method: call.method, arguments: call.arguments, callHandler: CallHandlerImpl(callResult: result))
+                    do{
+                        try gateway.processCall(method: call.method, arguments: call.arguments, callHandler: CallHandlerImpl(callResult: result))
+                    }catch{
+                        print("processCall error:\(error)")
+                        result(FlutterError(code: "10086", message: "\(error)", details: nil))
+                    }
                 }else{
                     result(FlutterError(code: "10086", message: "gateway is down", details: nil))
                 }

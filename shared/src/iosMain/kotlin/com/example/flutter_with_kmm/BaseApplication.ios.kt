@@ -1,5 +1,6 @@
 package com.example.flutter_with_kmm
 
+import com.example.flutter_with_kmm.domain.available
 import com.example.flutter_with_kmm.utils.pref
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterMethodChannel
@@ -13,6 +14,7 @@ import org.lighthousegames.logging.logging
 import platform.CoreFoundation.CFRunLoopGetCurrent
 import platform.CoreFoundation.kCFRunLoopDefaultMode
 import platform.CoreTelephony.CTCellularData
+import platform.CoreTelephony.CTCellularDataRestrictedState
 import platform.SystemConfiguration.SCNetworkReachabilityCreateWithName
 import platform.SystemConfiguration.SCNetworkReachabilityRef
 import platform.SystemConfiguration.SCNetworkReachabilityScheduleWithRunLoop
@@ -36,6 +38,7 @@ actual class BaseApplication(
 
     internal var _cellularData = CTCellularData()
         private set
+
 
     @Suppress("unused")
     fun setupEngine(controller: FlutterViewController, lifecycle: EngineLifecycleListener) {
@@ -61,7 +64,9 @@ actual class BaseApplication(
 
     @Suppress("unused")
     fun FlutterEngine.addEngineLifecycleListener(
+        @Suppress("unused")
         listener: EngineLifecycleListener,
+        @Suppress("unused")
         controller: FlutterViewController
     ) {
 //        controller.addObserver(this,"", NSKeyValueObservingOptionNew,null)
@@ -70,7 +75,7 @@ actual class BaseApplication(
     internal var isFirstRun by pref(true)
 
     init {
-        if (UIDevice.currentDevice.systemVersion.toFloat() >= 10.0 && !isSimulator()) {
+        if (available(10.0f) && !isSimulator()) {
             _reachabilityRef = SCNetworkReachabilityCreateWithName(null, "223.5.5.5")
             // 此句会触发系统弹出权限询问框
             SCNetworkReachabilityScheduleWithRunLoop(
@@ -88,7 +93,6 @@ actual class BaseApplication(
             delay(3.seconds)
             return@withContext withContext(Dispatchers.Main) {
                 if (app.applicationState == UIApplicationState.UIApplicationStateActive) {
-
                     logger.error { "网络已连接" }
                 } else {
                     logger.error { "网络异常" }

@@ -15,6 +15,7 @@ actual class TmSDKUtilities : NSObject(), V2TIMSDKListenerProtocol {
         // 指定 log 输出级别
         config.logLevel = V2TIM_LOG_INFO
         // 设置 log 监听器
+        @Suppress("unused")
         config.logListener = { logLevel, logContent ->
             // logContent 为 SDK 日志内容
         }

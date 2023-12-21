@@ -16,12 +16,20 @@ class Gateway {
   }
 
   static setPlatformCallsListeners(Function onUsersUpdate,Function(Map<String,dynamic> map) onNativeCall){
-    platform.setMethodCallHandler((call) {
+    platform.setMethodCallHandler((call) async{
       if (call.method == 'users' ) {
         String result = call.arguments as String;
         onUsersUpdate(result);
       }else if (call.method == 'nativeCallback' ) {
-        onNativeCall(call.arguments);
+        final Map<dynamic,dynamic> arguments = call.arguments as Map<dynamic,dynamic>;
+        final Map<String,dynamic> map =arguments.map((key, value){
+          if(value is Map<dynamic,dynamic>){
+            return MapEntry(key.toString(), value.map((key, value) => MapEntry(key.toString(), value)));
+          }else{
+            return MapEntry(key.toString(), value);
+          }
+        });
+        onNativeCall(map);
       }
       return Future.value();
     });

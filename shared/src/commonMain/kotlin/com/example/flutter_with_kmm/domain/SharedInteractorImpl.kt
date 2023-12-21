@@ -4,13 +4,16 @@ import com.example.flutter_with_kmm.data.SharedRepository
 import com.example.flutter_with_kmm.entities.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.lighthousegames.logging.logging
 
 class SharedInteractorImpl(
     private val sharedRepository: SharedRepository,
@@ -44,16 +47,29 @@ class SharedInteractorImpl(
 
     override fun setNativeCallbackListener(listener: (String, Map<String, Any>) -> Unit) {
         scope.launch {
-            sharedRepository.nativeCallbackFlow.collect {
-                withContext(Dispatchers.Main) {
-                    listener(it.first,it.second)
+            withContext(Dispatchers.IO) {
+                try {
+                    sharedRepository.nativeCallbackFlow.distinctUntilChanged()
+                        .collect {
+                        logging("flutter with kmm Gateway").e { ":::collect  ${sharedRepository.nativeCallbackFlow.hashCode()}" }
+                        withContext(Dispatchers.Main) {
+                            listener(it.first, it.second)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
             }
         }
     }
+
     override suspend fun callBridge(method: String, argument: Map<String, Any>) {
-        withContext(Dispatchers.Default){
-            sharedRepository.nativeCallbackFlow.tryEmit(method to argument)
+        withContext(Dispatchers.Default) {
+            try {
+                sharedRepository.nativeCallbackFlow.emit(method to argument)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

@@ -7,6 +7,8 @@ import com.example.flutter_with_kmm.entities.User
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.catch
 
 class SharedRepositoryImpl(
     private val userApi: UserApi,
@@ -19,7 +21,8 @@ class SharedRepositoryImpl(
     override suspend fun saveUser(user: User) = userDao.saveUser(user)
 
     override fun getUserFlow(): Flow<List<User>> = userDao.getUserFlow()
-    override val nativeCallbackFlow: MutableSharedFlow<Pair<String, Map<String, Any>>>
-        get() = MutableSharedFlow(replay = 0, extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    private val _nativeCallbackFlow = MutableSharedFlow<Pair<String, Map<String, Any>>>( replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val nativeCallbackFlow = _nativeCallbackFlow
 
 }

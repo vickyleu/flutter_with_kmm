@@ -1,3 +1,5 @@
+@file:Suppress("OPT_IN_USAGE")
+
 import org.gradle.kotlin.dsl.accessors.runtime.addConfiguredDependencyTo
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -140,6 +142,7 @@ kotlin {
             dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.sqldelight.android.driver)
+                implementation(libs.lifecycle.runtime)
                 //noinspection UseTomlInstead
                 compileOnly("io.flutter:flutter_embedding_debug:${project.latestFlutterVersion()}")
                 api(libs.tencent.imsdk)
@@ -165,13 +168,9 @@ kotlin {
             }
         }
     }
-
     compilerOptions { //  kotlin
         freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
     }
-    /*compilerOptions { //  kotlin
-        freeCompilerArgs.addAll(listOf("-opt-in=kotlin.RequiresOptIn", "-Xexpect-actual-classes"))
-    }*/
 }
 
 tasks.withType<PodGenTask>().configureEach {

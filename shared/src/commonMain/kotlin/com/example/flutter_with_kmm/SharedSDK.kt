@@ -69,11 +69,11 @@ internal class AutoUpdateDelegate<T>(private val onChange: (T) -> Unit) :
         return value
     }
 
-    override fun setValue(thisRef: Any?, property: KProperty<*>, newValue: T?) {
-        if (value != newValue) {
-            value = newValue
-            if (newValue != null)
-                onChange(newValue)
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T?) {
+        if (this.value != value) {
+            this.value = value
+            if (value != null)
+                onChange(value)
         }
     }
 }
