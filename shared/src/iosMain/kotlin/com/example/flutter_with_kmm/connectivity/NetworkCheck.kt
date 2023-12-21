@@ -58,14 +58,12 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
                     try {
                         when (it) {
                             CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {
-                                this@restrictedState.platform.logger.e { "Accessible 2" }
                                 this@restrictedState.interactor.callBridge(
                                     InternetGranted,
                                     mapOf(GrantedType to SDKNetworkGrantedType.Accessible.name)
                                 )
                             }
                             CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {
-                                this@restrictedState.platform.logger.e { "Unknown 2" }
                                 this@restrictedState.interactor.callBridge(
                                     InternetGranted,
                                     mapOf(GrantedType to SDKNetworkGrantedType.Unknown.name)
@@ -73,21 +71,16 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
                             }
                             CTCellularDataRestrictedState.kCTCellularDataRestricted -> {
                                 scope.launch{
-                                    this@restrictedState.platform.logger.e { "launch applicationState" }
                                     withContext(Dispatchers.IO){
-                                        this@restrictedState.platform.logger.e { "wait applicationState" }
                                         this@restrictedState.platform.waitActive()
                                         val canReachable = currentReachable()
-                                        this@restrictedState.platform.logger.e { "canReachable $canReachable" }
                                         if(canReachable){
-                                            this@restrictedState.platform.logger.e { "Accessible 3" }
                                             // 关闭没有通知
                                             this@restrictedState.interactor.callBridge(
                                                 InternetGranted,
                                                 mapOf(GrantedType to SDKNetworkGrantedType.Accessible.name)
                                             )
                                         }else{
-                                            this@restrictedState.platform.logger.e { "Restricted 2" }
                                             // 关闭没有通知
                                             this@restrictedState.interactor.callBridge(
                                                 InternetGranted,
@@ -119,23 +112,15 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
                 val type = getCurrentNetworkType()
                 /*  若用户是通过蜂窝数据 或 WLAN 上网，走到这里来 说明权限被关闭 SDKNetworkGrantedType.Restricted **/
                 // 可能开了飞行模式，无法判断 SDKNetworkGrantedType.Unknown
-                (type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI).apply {
-                    if(this){
-                        this@restrictedState.platform.logger.e { "Accessible 1" }
-                    }else{
-                        this@restrictedState.platform.logger.e { "Restricted 1" }
-                    }
-                }
+                (type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI)
             }
 
             CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {// 蜂窝数据访问不受限制，那就必定有 Wi-Fi 数据访问权限
-                this@restrictedState.platform.logger.e { "Accessible 1" }
                 true
             }
 
             CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {// CTCellularData 刚开始初始化的时候，可能会拿到 kCTCellularDataRestrictedStateUnknown 延迟一下再试就好了
                 if(delay){
-                    this@restrictedState.platform.logger.e { "Unknown 1" }
                     false
                 }else{
                     this@restrictedState.platform.waitActive()
@@ -253,8 +238,13 @@ suspend fun SDKGateway.wiFiIPAddress(): String? {
             }
         }
         // TODO 释放内存, 但是会报错
-//        freeifaddrs(interfaces.ptr.pointed.pointed?.readValue())
-
+        try {
+            interfaces.pointed?.readValue()?.apply {
+                freeifaddrs(this)
+            }
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
         if (ipAddress.isNullOrEmpty()) {
             return null
         }
