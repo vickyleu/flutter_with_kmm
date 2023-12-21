@@ -25,10 +25,11 @@ import platform.darwin.TARGET_OS_SIMULATOR
 import kotlin.time.Duration.Companion.seconds
 
 actual class BaseApplication(
+    // IMPORTANT app必须在主线程访问,不然会阻塞主线程上正在查询的协程,进而导致主线程等待,导致页面卡住
     val app: UIApplication,
     private val handleFlutterEngineChange: (FlutterMethodChannel) -> Unit
 ) {
-    actual val logger = logging("flutter with kmm Gateway")
+    actual val logger = logging()
     private var flutterEngine: FlutterEngine? by AutoUpdateDelegate { newValue ->
         handleFlutterEngineChange(newValue)
     }
@@ -88,10 +89,9 @@ actual class BaseApplication(
 
 
     internal suspend fun waitActive() {
-        return withContext(Dispatchers.IO) {
-            logger.error { "applicationState=${app.applicationState}" }
+        withContext(Dispatchers.IO) {
             delay(3.seconds)
-            return@withContext withContext(Dispatchers.Main) {
+            withContext(Dispatchers.Main) {
                 if (app.applicationState == UIApplicationState.UIApplicationStateActive) {
                     logger.error { "网络已连接" }
                 } else {

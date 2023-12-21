@@ -47,11 +47,11 @@ class SharedInteractorImpl(
 
     override fun setNativeCallbackListener(listener: (String, Map<String, Any>) -> Unit) {
         scope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Unconfined) {
                 try {
                     sharedRepository.nativeCallbackFlow.distinctUntilChanged()
                         .collect {
-                        logging("flutter with kmm Gateway").e { ":::collect  ${sharedRepository.nativeCallbackFlow.hashCode()}" }
+                        logging().e { ":::collect  ${sharedRepository.nativeCallbackFlow.hashCode()}" }
                         withContext(Dispatchers.Main) {
                             listener(it.first, it.second)
                         }

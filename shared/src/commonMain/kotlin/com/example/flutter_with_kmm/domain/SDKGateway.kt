@@ -21,9 +21,6 @@ class SDKGateway(internal val interactor: SharedInteractor, internal val platfor
 
     @Throws(Exception::class)
     fun processCall(method: String, arguments: Any?, callHandler: CallHandler) {
-
-        platform.logger.error { "processCall method:::$method" }
-
         scope.launch {
             try {
                 when (method) {
@@ -49,9 +46,9 @@ class SDKGateway(internal val interactor: SharedInteractor, internal val platfor
                     "isInternetGranted" -> {
                         val dtf=DateTimeFormatter("yyyy-MM-dd HH:mm:ss")
                         try {
-                            this@SDKGateway.platform.logger.error { "第一次请求的时长:${dtf.format(Clock.System.now().dateTime())}" }
+//                            this@SDKGateway.platform.logger.error { "第一次请求的时长:${dtf.format(Clock.System.now().dateTime())}" }
                             val isGranted = isInternetGranted()
-                            this@SDKGateway.platform.logger.error { "第一次请求完成的时长:${dtf.format(Clock.System.now().dateTime())}" }
+//                            this@SDKGateway.platform.logger.error { "第一次请求完成的时长:${dtf.format(Clock.System.now().dateTime())}" }
                             withContext(Dispatchers.Main) {
                                 callHandler.success(isGranted)
                             }

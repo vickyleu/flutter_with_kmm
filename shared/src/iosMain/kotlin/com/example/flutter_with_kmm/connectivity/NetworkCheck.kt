@@ -47,31 +47,56 @@ import kotlin.time.Duration.Companion.seconds
 
 internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
     if (this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier == null) {
+        var updateState:CTCellularDataRestrictedState? = null
         this.platform._cellularData.cellularDataRestrictionDidUpdateNotifier = block@{
+            if(updateState == it){
+                return@block
+            }
+            updateState = it
             scope.launch {
                 withContext(Dispatchers.IO) {
                     try {
                         when (it) {
                             CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {
+                                this@restrictedState.platform.logger.e { "Accessible 2" }
                                 this@restrictedState.interactor.callBridge(
                                     InternetGranted,
                                     mapOf(GrantedType to SDKNetworkGrantedType.Accessible.name)
                                 )
                             }
                             CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {
+                                this@restrictedState.platform.logger.e { "Unknown 2" }
                                 this@restrictedState.interactor.callBridge(
                                     InternetGranted,
                                     mapOf(GrantedType to SDKNetworkGrantedType.Unknown.name)
                                 )
                             }
                             CTCellularDataRestrictedState.kCTCellularDataRestricted -> {
-                                // 关闭没有通知
-                                 this@restrictedState.interactor.callBridge(
-                                     InternetGranted,
-                                     mapOf(GrantedType to SDKNetworkGrantedType.Restricted.name)
-                                 )
+                                scope.launch{
+                                    this@restrictedState.platform.logger.e { "launch applicationState" }
+                                    withContext(Dispatchers.IO){
+                                        this@restrictedState.platform.logger.e { "wait applicationState" }
+                                        this@restrictedState.platform.waitActive()
+                                        val canReachable = currentReachable()
+                                        this@restrictedState.platform.logger.e { "canReachable $canReachable" }
+                                        if(canReachable){
+                                            this@restrictedState.platform.logger.e { "Accessible 3" }
+                                            // 关闭没有通知
+                                            this@restrictedState.interactor.callBridge(
+                                                InternetGranted,
+                                                mapOf(GrantedType to SDKNetworkGrantedType.Accessible.name)
+                                            )
+                                        }else{
+                                            this@restrictedState.platform.logger.e { "Restricted 2" }
+                                            // 关闭没有通知
+                                            this@restrictedState.interactor.callBridge(
+                                                InternetGranted,
+                                                mapOf(GrantedType to SDKNetworkGrantedType.Restricted.name)
+                                            )
+                                        }
+                                    }
+                                }
                             }
-
                             else -> Unit
                         }
                     }catch (e:Exception){
@@ -82,7 +107,7 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
         }
     }
     if (this.platform.isFirstRun) {
-        return withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.Unconfined) {
             this@restrictedState.platform.waitActive()
             this@restrictedState.platform.isFirstRun = false
             restrictedState(delay=true)
@@ -91,20 +116,26 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
     else {
         return when (this@restrictedState.platform._cellularData.restrictedState()) {
             CTCellularDataRestrictedState.kCTCellularDataRestricted -> {// 无蜂窝数据,访问受限制
-                this@restrictedState.platform.logger.error { ":::::>>>>>>:::::无蜂窝数据访问权限" }
                 val type = getCurrentNetworkType()
                 /*  若用户是通过蜂窝数据 或 WLAN 上网，走到这里来 说明权限被关闭 SDKNetworkGrantedType.Restricted **/
                 // 可能开了飞行模式，无法判断 SDKNetworkGrantedType.Unknown
-                (type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI)
+                (type == SDKNetworkType.Cellular || type == SDKNetworkType.WIFI).apply {
+                    if(this){
+                        this@restrictedState.platform.logger.e { "Accessible 1" }
+                    }else{
+                        this@restrictedState.platform.logger.e { "Restricted 1" }
+                    }
+                }
             }
 
             CTCellularDataRestrictedState.kCTCellularDataNotRestricted -> {// 蜂窝数据访问不受限制，那就必定有 Wi-Fi 数据访问权限
-                this@restrictedState.platform.logger.error { ":::::>>>>>>:::::有蜂窝数据访问权限" }
+                this@restrictedState.platform.logger.e { "Accessible 1" }
                 true
             }
 
             CTCellularDataRestrictedState.kCTCellularDataRestrictedStateUnknown -> {// CTCellularData 刚开始初始化的时候，可能会拿到 kCTCellularDataRestrictedStateUnknown 延迟一下再试就好了
                 if(delay){
+                    this@restrictedState.platform.logger.e { "Unknown 1" }
                     false
                 }else{
                     this@restrictedState.platform.waitActive()

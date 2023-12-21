@@ -14,7 +14,7 @@ import kotlin.reflect.KProperty
 class Pref<T : Any>(private val key: String?, private val default: T) {
     private val settings = Settings()
 
-    private val logger = logging("Pref")
+    private val logger = logging()
 
     operator fun getValue(any: Any, property: KProperty<*>): T {
         val s: T = when (default::class) {

@@ -61,7 +61,7 @@ actual suspend fun SDKGateway.isInternetGranted(): Boolean {
             return true
         }
         return this.scope.launch {
-            withContext(Dispatchers.IO) {
+            withContext(Dispatchers.Unconfined) {
                 this@isInternetGranted.restrictedState()
             }
         }.start()

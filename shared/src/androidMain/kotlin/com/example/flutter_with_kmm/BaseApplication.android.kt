@@ -11,7 +11,7 @@ actual class BaseApplication(
     val app: Application,
     private val handleFlutterEngineChange: (MethodChannel) -> Unit
 ) {
-    actual val logger = logging("flutter with kmm Gateway")
+    actual val logger = logging()
     // 对外暴露的属性，通过委托实现监听
     var flutterEngine: FlutterEngine? by AutoUpdateDelegate { newValue ->
         handleFlutterEngineChange(newValue)
