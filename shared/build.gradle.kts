@@ -1,5 +1,6 @@
 @file:Suppress("OPT_IN_USAGE")
 
+import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
 import org.gradle.kotlin.dsl.accessors.runtime.addConfiguredDependencyTo
 import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
@@ -146,8 +147,14 @@ kotlin {
                 //noinspection UseTomlInstead
                 compileOnly("io.flutter:flutter_embedding_debug:${project.latestFlutterVersion()}")
                 api(libs.tencent.imsdk)
+                compileOnly(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar")))) // androidMain 添加一个项目目录下libs/下的本地jar包
             }
         }
+        // androidMain 添加一个项目目录下libs/下的本地jar包
+
+
+
+
         val iosMain by getting {
             dependsOn(commonMain)
             dependencies {

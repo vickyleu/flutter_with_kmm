@@ -146,6 +146,13 @@ extensions.configure<FlutterExtension>("flutter") {
 }
 
 dependencies {
+    implementation(libs.appcompat)
+    implementation(libs.activity)
+//    implementation("androidx.activity:activity") {
+//        version {
+//            strictly("1.5.1")
+//        }
+//    }
     implementation(project(":shared"))
     //noinspection UseTomlInstead
     compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")

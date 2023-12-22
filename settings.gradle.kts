@@ -9,8 +9,6 @@ import kotlin.io.path.exists
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
-
-    println("settings执行前")
     listOf(repositories, dependencyResolutionManagement.repositories).forEach {
         it.apply {
             google {
@@ -157,7 +155,13 @@ pluginManagement {
                 }
             }
         }
-        setupFlutterPatch(flutterSdkPath)
+//        setupFlutterPatch(flutterSdkPath)
+        /**
+        rm /Volumes/Extra/flutter/bin/cache/flutter_tools.stamp & \
+        rm /Volumes/Extra/flutter/bin/cache/flutter_tools.snapshot & \
+        flutter pub get
+         */
+
         //flutterSdkPath 返回的是flutter的目录(/Volumes/Extra/flutter),下面通过命令行获取flutter的版本号
         println("flutterSdkPath:$flutterSdkPath")
         settings.extra["flutterSdkPath"] = flutterSdkPath
@@ -166,7 +170,6 @@ pluginManagement {
         return flutterSdkPath
     }
     applyFlutterPatch()
-    println("settings执行后")
     plugins {
         if (sdkPathExists) {
             id("dev.flutter.flutter-plugin-loader") version "1.0.0" // settings plugin, only work for settings.gradle

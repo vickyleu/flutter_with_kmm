@@ -6,10 +6,8 @@
 
     <application
         android:name=".AppDelegate"
-        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="flutter_with_kmm"
-        tools:targetApi="tiramisu">
+        android:label="flutter_with_kmm">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

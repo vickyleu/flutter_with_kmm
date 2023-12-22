@@ -3,6 +3,8 @@ package com.example.flutter_with_kmm
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
 import com.example.flutter_with_kmm.data.db.DatabaseDriverFactory
 import com.example.flutter_with_kmm.domain.SDKGateway
@@ -15,17 +17,15 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.reflect.full.functions
-import kotlin.reflect.jvm.isAccessible
 
 class AppDelegate : Application() {
     private val platform = BaseApplication(this) {
         it.setMethodCallHandler { call, result ->
             try {
                 gateway.processCall(call.method, call.arguments, CallHandlerImpl(result))
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
-                result.error("error",e.message,e)
+                result.error("error", e.message, e)
             }
         }
         gateway.setCallbacks(CallbackHandlerImpl(it))
@@ -58,33 +58,42 @@ class AppDelegate : Application() {
     }
 
 
-
     private val activityLifecycleCallback = object : ActivityLifecycleCallbacks {
         override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
             when (activity) {
-                is FlutterActivity -> {
+                is ComponentActivity -> {
+                    activity.onBackPressedDispatcher.addCallback(
+                        activity,
+                        object : OnBackPressedCallback(true) {
+                            override fun handleOnBackPressed() {
+                                if (!activity.isFinishing) {
+                                    activity.finish()
+                                }
+                            }
+                        })
+                }
+            }
+            when (activity) {
+                is MainActivity -> {
                     if (platform.flutterEngine == null) {
-                        val clazz = activity::class
                         activity.lifecycleScope.launch {
                             withContext(Dispatchers.IO) {
-                                val getFlutterEngine =
-                                    clazz.functions.firstOrNull { it.name == "getFlutterEngine" }
-                                        ?.let {
-                                            it.isAccessible = true
-                                            it
-                                        }
-                                if (getFlutterEngine != null) {
-                                    async {
-                                        delay(100)
-                                        val engine = (try {
-                                            (getFlutterEngine.call(activity) as? FlutterEngine)
-                                        } catch (e: Exception) {
-                                            e.printStackTrace()
-                                            null
-                                        }) ?: return@async
-                                        onFlutterCreate(activity, engine)
-                                    }.join()
-                                }
+                                async {
+                                    var count = 0
+                                    var flutterEngine: FlutterEngine?
+                                    while (run {
+                                            flutterEngine = try {
+                                                activity.flutterEngineImpl
+                                            } catch (e: Exception) {
+                                                null
+                                            }
+                                            flutterEngine
+                                        } == null && count++ < 35) {
+                                        delay(50)
+                                    }
+                                    val engine = flutterEngine ?: return@async
+                                    onFlutterCreate(activity, engine)
+                                }.join()
                             }
                         }
                     }
