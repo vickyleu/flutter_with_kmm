@@ -1,7 +1,6 @@
 package com.example.flutter_with_kmm
+
 import android.app.Application
-import com.example.flutter_with_kmm.AutoUpdateDelegate
-import com.example.flutter_with_kmm.SharedSDK
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
@@ -12,8 +11,13 @@ actual class BaseApplication(
     private val handleFlutterEngineChange: (MethodChannel) -> Unit
 ) {
     actual val logger = logging()
+
+
+    internal var networkReceiver: Any? = null
+
     // 对外暴露的属性，通过委托实现监听
     var flutterEngine: FlutterEngine? by AutoUpdateDelegate { newValue ->
+        this.logger.error { "BaseApplication handleFlutterEngineChange: ${newValue.hashCode()}" }
         handleFlutterEngineChange(newValue)
     }
         private set
@@ -22,9 +26,10 @@ actual class BaseApplication(
         engine.addEngineLifecycleListener(lifecycle)
         flutterEngine = engine
         // 缓存FlutterEngine
-        FlutterEngineCache
-            .getInstance()
-            .put("global_engine_id", flutterEngine)
+        val engineCache = FlutterEngineCache.getInstance()
+        if (!engineCache.contains("global_engine_id")) {
+            engineCache.put("global_engine_id", engine)
+        }
     }
 
     // 处理 FlutterEngine 变化的方法
@@ -34,10 +39,18 @@ actual class BaseApplication(
         val binaryMessenger = engine.dartExecutor.binaryMessenger
         val methodChannel = MethodChannel(binaryMessenger, SharedSDK.CHANNEL)
         handleFlutterEngineChange.invoke(methodChannel)
+        engine.dartExecutor.binaryMessenger.enableBufferingIncomingMessages()
     }
 
     fun destroy(lifecycle: FlutterEngine.EngineLifecycleListener) {
         flutterEngine?.removeEngineLifecycleListener(lifecycle)
+        val engineCache = FlutterEngineCache.getInstance()
+        if (engineCache.contains("global_engine_id")) {
+            engineCache.remove("global_engine_id")
+        }
+        flutterEngine?.apply {
+            dartExecutor.binaryMessenger.disableBufferingIncomingMessages()
+        }
         flutterEngine = null
     }
 

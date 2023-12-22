@@ -8,6 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.lifecycleScope
 import com.example.flutter_with_kmm.data.db.DatabaseDriverFactory
 import com.example.flutter_with_kmm.domain.SDKGateway
+import com.example.flutter_with_kmm.utils.HarmonyCheck
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngine.EngineLifecycleListener
@@ -17,9 +18,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.lighthousegames.logging.logging
 
 class AppDelegate : Application() {
-    private val platform = BaseApplication(this) {
+    internal val platform = BaseApplication(this) {
         it.setMethodCallHandler { call, result ->
             try {
                 gateway.processCall(call.method, call.arguments, CallHandlerImpl(result))
@@ -37,6 +39,7 @@ class AppDelegate : Application() {
 
 
     override fun onCreate() {
+        platform.logger.error { "AppDelegate onCreate: ${platform.hashCode()}" }
         registerActivityLifecycleCallbacks(activityLifecycleCallback)
         super.onCreate()
     }
@@ -60,21 +63,22 @@ class AppDelegate : Application() {
 
     private val activityLifecycleCallback = object : ActivityLifecycleCallbacks {
         override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
-            when (activity) {
-                is ComponentActivity -> {
-                    activity.onBackPressedDispatcher.addCallback(
-                        activity,
-                        object : OnBackPressedCallback(true) {
-                            override fun handleOnBackPressed() {
-                                if (!activity.isFinishing) {
-                                    activity.finish()
-                                }
-                            }
-                        })
-                }
-            }
+//            when (activity) {
+//                is ComponentActivity -> {
+//                    activity.onBackPressedDispatcher.addCallback(
+//                        activity,
+//                        object : OnBackPressedCallback(true) {
+//                            override fun handleOnBackPressed() {
+//                                if (!activity.isFinishing) {
+//                                    activity.finish()
+//                                }
+//                            }
+//                        })
+//                }
+//            }
             when (activity) {
                 is MainActivity -> {
+                    platform.logger.error { "onActivityPreCreated: ${HarmonyCheck.isHarmonyOs()}" }
                     if (platform.flutterEngine == null) {
                         activity.lifecycleScope.launch {
                             withContext(Dispatchers.IO) {

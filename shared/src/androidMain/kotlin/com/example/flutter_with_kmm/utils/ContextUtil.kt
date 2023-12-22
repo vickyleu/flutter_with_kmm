@@ -39,11 +39,10 @@ fun Context.isNetworkEnable(): Boolean {
  * 注册网络权限打开关闭的广播
  */
 @SuppressLint("ObsoleteSdkInt")
-fun Context.registerNetworkReceiver(listener: (Boolean) -> Unit = {}) {
+fun Context.registerNetworkReceiver(listener: (Boolean) -> Unit = {}): Any {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         val connectivityManager = getService<ConnectivityManager>(Context.CONNECTIVITY_SERVICE)
-        connectivityManager?.registerDefaultNetworkCallback(object :
-            ConnectivityManager.NetworkCallback() {
+        val networkReceiver = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: android.net.Network) {
                 // 网络权限打开
                 listener.invoke(true)
@@ -53,7 +52,9 @@ fun Context.registerNetworkReceiver(listener: (Boolean) -> Unit = {}) {
                 // 网络权限关闭
                 listener.invoke(false)
             }
-        })
+        }
+        connectivityManager?.registerDefaultNetworkCallback(networkReceiver)
+        return networkReceiver
     } else {
         // 注册广播
         val networkReceiver = object : BroadcastReceiver() {
@@ -67,6 +68,19 @@ fun Context.registerNetworkReceiver(listener: (Boolean) -> Unit = {}) {
         val intentFilter = IntentFilter()
         intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
         registerReceiver(networkReceiver, intentFilter)
+        return networkReceiver
+    }
+}
+/**
+ * 注册网络权限打开关闭的广播
+ */
+@SuppressLint("ObsoleteSdkInt")
+fun Context.unregisterNetworkReceiver(listener: Any?) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        val connectivityManager = getService<ConnectivityManager>(Context.CONNECTIVITY_SERVICE)
+        connectivityManager?.unregisterNetworkCallback((listener as? ConnectivityManager.NetworkCallback)?:return)
+    } else {
+        unregisterReceiver(listener as? BroadcastReceiver)
     }
 }
 

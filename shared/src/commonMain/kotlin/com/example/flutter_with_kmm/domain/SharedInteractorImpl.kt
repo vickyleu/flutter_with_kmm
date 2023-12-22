@@ -4,7 +4,6 @@ import com.example.flutter_with_kmm.data.SharedRepository
 import com.example.flutter_with_kmm.entities.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -51,11 +50,10 @@ class SharedInteractorImpl(
                 try {
                     sharedRepository.nativeCallbackFlow.distinctUntilChanged()
                         .collect {
-                        logging().e { ":::collect  ${sharedRepository.nativeCallbackFlow.hashCode()}" }
-                        withContext(Dispatchers.Main) {
-                            listener(it.first, it.second)
+                            withContext(Dispatchers.Main) {
+                                listener(it.first, it.second)
+                            }
                         }
-                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

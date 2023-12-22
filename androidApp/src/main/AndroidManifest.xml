@@ -3,11 +3,13 @@
     package="com.example.flutter_with_kmm">
 
     <uses-permission android:name="android.permission.INTERNET" />
-
+<!--    android:enableOnBackInvokedCallback="true"-->
+<!--    tools:targetApi="tiramisu"-->
     <application
         android:name=".AppDelegate"
         android:icon="@mipmap/ic_launcher"
-        android:label="flutter_with_kmm">
+        android:label="flutter_with_kmm"
+        >
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

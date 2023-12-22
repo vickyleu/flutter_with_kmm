@@ -13,14 +13,16 @@ class Interactor {
   StreamController<Map<String,dynamic>> nativeStream = StreamController<Map<String,dynamic>>.broadcast();
   final usersStream = BehaviorSubject<List<User>>();
 
+  bool isInitialized = false;
+
   init() async{
     setPlatformCallsListeners();
+    isInitialized = true;
   }
 
   Future<bool> isInternetGranted() async {
     return await doOnKMM(() async {
       bool isGranted = (await Gateway.isInternetGranted() as bool?) ?? false;
-      print("isGranted::$isGranted");
       return isGranted;
     });
   }
@@ -80,7 +82,6 @@ class Interactor {
       if(method == InternetGranted){
         final Map<String,dynamic> args = result['args'] as Map<String,dynamic>;
         final SDKNetworkGrantedType type =SDKNetworkGrantedType.fromString(args['Granted']);
-        print("type::${type.toString()}  result:${args.toString()}}");
         switch(type){
           case SDKNetworkGrantedType.Accessible:{
             callback();

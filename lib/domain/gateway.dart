@@ -20,7 +20,8 @@ class Gateway {
       if (call.method == 'users' ) {
         String result = call.arguments as String;
         onUsersUpdate(result);
-      }else if (call.method == 'nativeCallback' ) {
+      }
+      else if (call.method == 'nativeCallback' ) {
         final Map<dynamic,dynamic> arguments = call.arguments as Map<dynamic,dynamic>;
         final Map<String,dynamic> map =arguments.map((key, value){
           if(value is Map<dynamic,dynamic>){

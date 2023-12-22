@@ -6,13 +6,15 @@ import 'package:flutter_with_kmm/presentation/users/users_screen.dart';
 import 'package:flutter_with_kmm/presentation/users/users_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_with_kmm/entities/user.dart';
+import 'package:go_router/go_router.dart';
 
 class SavedUsersScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
     Function(User) onItemClick = (user) {
-      Navigator.pushNamed(context, UserInfoScreen.routeName, arguments: user);
+      context.push(UserInfoScreen.routeName,extra: user);
+      // Navigator.pushNamed(context, UserInfoScreen.routeName, arguments: user);
     };
     return Scaffold(
       appBar: AppBar(

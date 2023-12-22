@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_with_kmm/presentation/user_info/user_info_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'app_router.dart';
+import 'package:go_router/go_router.dart';
+import 'route/app_router.dart';
 import 'domain/interactor.dart';
 import 'presentation/saved_users/saved_users_cubit.dart';
 import 'presentation/users/users_cubit.dart';
@@ -19,18 +20,31 @@ class FlutterWithKmmApp extends StatelessWidget {
 
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey = GlobalKey();
 
+
+
   @override
   Widget build(BuildContext context) {
-    interactor.init();
-    interactor.errorStream.stream.listen((message) { showError(message); });
-    interactor.progressStream.stream.listen((state) { updateProgress(state); });
+    if(!interactor.isInitialized){
+      interactor.init();
+      interactor.errorStream.stream.listen((message) { showError(message); });
+      interactor.progressStream.stream.listen((state) { updateProgress(state); });
+    }
     return MultiBlocProvider(
       providers: [
         BlocProvider<UsersCubit>(create: (_) => UsersCubit(interactor),),
         BlocProvider<SavedUsersCubit>(create: (_) => SavedUsersCubit(interactor),),
         BlocProvider<UserInfoCubit>(create: (_) => UserInfoCubit(interactor),),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
+        theme: ThemeData(
+            primaryColor:Color(0xFF8B7ADF)
+        ),
+        debugShowCheckedModeBanner: false,
+        title: 'FlutterWithKmm',
+        routerConfig: AppRouter.router(_navigatorKey),
+        scaffoldMessengerKey: _scaffoldKey,
+      ),
+      /*child: MaterialApp(
         theme: ThemeData(
             primaryColor:Color(0xFF8B7ADF)
         ),
@@ -40,7 +54,7 @@ class FlutterWithKmmApp extends StatelessWidget {
         onGenerateRoute: AppRouter.onGenerateRoute,
         navigatorKey: _navigatorKey,
         scaffoldMessengerKey: _scaffoldKey,
-      ),
+      ),*/
     );
   }
 
@@ -64,7 +78,12 @@ class FlutterWithKmmApp extends StatelessWidget {
         },
       );
     } else {
-      _navigatorKey.currentState?.pop();
+      try {
+        _navigatorKey.currentContext?.pop();
+        // _navigatorKey.currentState?.pop();
+      } catch (e) {
+        print(e);
+      }
     }
   }
 
