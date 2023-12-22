@@ -9,7 +9,7 @@ import 'user_info_cubit.dart';
 
 class UserInfoScreen extends StatelessWidget {
 
-  late User _user;
+  final User _user;
 
   UserInfoScreen(this._user);
 

@@ -8,11 +8,11 @@ import 'package:flutter_with_kmm/presentation/users/users_screen.dart';
 class MainScreen extends StatefulWidget {
 
   @override
-  State<StatefulWidget> createState() => Mainpresentationtate();
+  State<StatefulWidget> createState() => MainPresentationState();
 
 }
 
-class Mainpresentationtate extends State<MainScreen> {
+class MainPresentationState extends State<MainScreen> {
 
   var _currentIndex = 0;
 

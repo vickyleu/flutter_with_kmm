@@ -4,12 +4,11 @@ import 'package:flutter_with_kmm/presentation/users/users_cubit.dart';
 import 'package:flutter_with_kmm/presentation/users/users_state.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_with_kmm/entities/user.dart';
 
 class UsersScreen extends StatelessWidget {
 
-  ScrollController _scrollController = new ScrollController();
+  final ScrollController _scrollController = new ScrollController();
 
   @override
   Widget build(BuildContext context) {

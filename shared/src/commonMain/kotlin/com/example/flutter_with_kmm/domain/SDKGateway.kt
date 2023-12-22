@@ -17,11 +17,17 @@ class SDKGateway(
     internal val platform: BaseApplication
 ) {
 
+    /**
+     * 对外暴露的协程作用域
+     */
     internal var scope = lazy {
         return@lazy _scope!!
     }
         private set
 
+    /**
+     * 内部使用的协程作用域,会cancel掉,不影响外部使用,同时能控制协程的生命周期
+     */
     private var _scope: CoroutineScope? = null
 
     init {
