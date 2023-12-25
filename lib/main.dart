@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_with_kmm/presentation/splash/splash_guide_cubit.dart';
 import 'package:flutter_with_kmm/presentation/user_info/user_info_cubit.dart';
+import 'package:fps_monitor/widget/custom_widget_inspector.dart';
 import 'package:go_router/go_router.dart';
 
 import 'domain/interactor.dart';
@@ -30,6 +33,9 @@ class FlutterWithKmmApp extends StatelessWidget {
         updateProgress(state);
       });
     }
+    SchedulerBinding.instance.addPostFrameCallback((t) =>
+      overlayState =_navigatorKey.currentState!.overlay!
+    );
     return MultiBlocProvider(
       providers: [
         BlocProvider<UsersCubit>(
@@ -41,12 +47,21 @@ class FlutterWithKmmApp extends StatelessWidget {
         BlocProvider<UserInfoCubit>(
           create: (_) => UserInfoCubit(interactor),
         ),
+        BlocProvider<SplashGuideCubit>(
+          create: (_) => SplashGuideCubit(interactor),
+        ),
       ],
       child: MaterialApp.router(
         theme: ThemeData(primaryColor: Color(0xFF8B7ADF)),
         debugShowCheckedModeBanner: false,
+        checkerboardOffscreenLayers: true, // 开启渲染层检测
+        checkerboardRasterCacheImages: true, // 开启图片缓存检测
+        themeAnimationDuration: Duration(milliseconds: 15), // 主题切换时间
         showPerformanceOverlay: true, // 开启FPS监控
         title: 'FlutterWithKmm',
+        builder: (context, child) {
+          return CustomWidgetInspector(child: child??Container());
+        },
         routerConfig: AppRouter.router(_navigatorKey),
         scaffoldMessengerKey: _scaffoldKey,
       ),

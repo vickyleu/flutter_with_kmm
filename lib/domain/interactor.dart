@@ -53,6 +53,7 @@ class Interactor {
     };
 
     var onNativeCall = (Map<String,dynamic> result) {
+      print("onNativeCall: $result");
       if(nativeMethod.contains(result['method'])){
         nativeStream.add(result);
       }

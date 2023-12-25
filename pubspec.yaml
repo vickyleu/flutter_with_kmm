@@ -24,7 +24,7 @@ dependencies:
     sdk: flutter
 
   go_router: ^13.0.0
-#  flutter_constraintlayout: ^1.7.0-stable
+  flutter_constraintlayout: ^1.7.0-stable
   flutter_screenutil: ^5.9.0
   flutter_svg: ^2.0.9
   # The following adds the Cupertino Icons font to your application.
@@ -32,6 +32,10 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_bloc: ^8.1.3
   rxdart: ^0.27.7
+  fps_monitor: ^2.0.0
+  keframe: ^3.0.0
+  bruno: ^3.4.2
+
 
 
 
