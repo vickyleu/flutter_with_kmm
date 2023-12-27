@@ -10,8 +10,8 @@ class AppRouter {
   // GoRouter configuration
   static GoRouter router(GlobalKey<NavigatorState> navigatorKey) {
     return GoRouter(
-      initialLocation: '/main',
-      // initialLocation: '/splash',
+      // initialLocation: '/main',
+      initialLocation: '/splash',
       navigatorKey: navigatorKey,
       routes: [
         GoRoute(

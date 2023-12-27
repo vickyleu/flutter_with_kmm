@@ -6,4 +6,8 @@ class SplashGuideCubit extends Cubit<SplashState> {
   Interactor interactor;
 
   SplashGuideCubit(this.interactor) : super(SplashLoading());
+
+  void changeIndex(int index) {
+
+  }
 }

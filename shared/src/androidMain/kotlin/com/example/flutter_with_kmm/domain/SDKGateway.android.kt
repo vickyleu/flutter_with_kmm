@@ -12,7 +12,7 @@ actual suspend fun SDKGateway.isInternetGranted(): Boolean {
    return withContext(Dispatchers.IO){
         val isNetworkEnable = this@isInternetGranted.platform.app.isNetworkEnable()
        // 添加广播监听网络权限关闭打开的事件
-       this@isInternetGranted.platform.app.registerNetworkReceiver(this) {
+       this@isInternetGranted.platform.app.registerNetworkReceiver(this@isInternetGranted.noLimitScope) {
            this@isInternetGranted.scope.value.launch {
                withContext(Dispatchers.IO) {
                    this@isInternetGranted.interactor.callBridge(

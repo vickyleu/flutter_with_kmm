@@ -4,6 +4,7 @@ import com.example.flutter_with_kmm.BaseApplication
 import com.example.flutter_with_kmm.utils.DateTimeFormatter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -16,6 +17,8 @@ class SDKGateway(
     internal val interactor: SharedInteractor,
     internal val platform: BaseApplication
 ) {
+
+    final val noLimitScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /**
      * 对外暴露的协程作用域

@@ -79,7 +79,7 @@ subprojects {
         this.ext["kotlin_version"] = kotlinVersion
         val java = JavaVersion.valueOf("VERSION_$javaVersion")
         try {
-            if (this.name != "shared" && this.name != "android") {
+            if (this.name != "shared" ) { //&& this.name != "android"
                 if (this.hasProperty("android") && this.name != "gradle") {
                     val androidProperty = this.property("android")
                     if (androidProperty is com.android.build.gradle.LibraryExtension) {
@@ -92,6 +92,9 @@ subprojects {
                         }
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
+                        }
+                        androidProperty.sourceSets.getByName("main").apply {
+                            println("project Library:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
                         }
                         var currentCompileSdk = (androidProperty.compileSdk ?: androidCompileSdkInt)
                         if (sdkMinimalMap.containsKey(androidCompileSdkMinimal)) {
@@ -144,7 +147,10 @@ subprojects {
                                 "UnusedResourcesConfiguration"
                             )
                         }
-                    } else if (androidProperty is com.android.build.gradle.TestedExtension) {
+
+
+                    }
+                    else if (androidProperty is com.android.build.gradle.TestedExtension) {
                         if (androidProperty.namespace == null) {
                             androidProperty.sourceSets.getByName("main").manifest.srcFile.also {
                                 val manifest = XmlSlurper().parse(file(it))
@@ -156,7 +162,9 @@ subprojects {
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
                         }
-
+                        androidProperty.sourceSets.getByName("main").apply {
+                            println("project:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
+                        }
                         var currentCompileSdk =
                             (androidProperty.compileSdkVersion?.toIntOrNull()
                                 ?: androidCompileSdkInt)
@@ -193,6 +201,27 @@ subprojects {
 
                         androidProperty.compileOptions.sourceCompatibility = java
                         androidProperty.compileOptions.targetCompatibility = java
+                    }
+                    val flutterVersion = this.latestFlutterVersion()
+                    this.dependencies{
+                        // 判断是否包含flutter的依赖,如果不包含,则添加依赖
+                        val project = this@subprojects
+                        //noinspection UseTomlInstead
+                        val dep = project.configurations.findByName("compileOnly")?.dependencies
+                        if(dep!=null){
+                            if(dep.find { it.group == "io.flutter" } == null){
+                                project.dependencies.add("compileOnly",
+                                    project.dependencies.create("io.flutter:flutter_embedding_debug:$flutterVersion"))
+                            }else if(dep.find { it.group == "io.flutter" && it.version != flutterVersion } != null){
+                                val depend = dep.find { it.group == "io.flutter" && it.version != flutterVersion }!!
+                                // 如果flutter的版本不一致,则替换
+                                project.dependencies.add("compileOnly",
+                                    project.dependencies.create("${depend.group}:${depend.name}:$flutterVersion"))
+                            }
+                        }else{
+                            project.dependencies.add("compileOnly",
+                                project.dependencies.create("io.flutter:flutter_embedding_debug:$flutterVersion"))
+                        }
                     }
                 }
                 if (this.hasProperty("kotlin") && this.name != "gradle") {

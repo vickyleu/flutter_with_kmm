@@ -15,7 +15,6 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
@@ -141,7 +140,7 @@ fun Context.registerNetworkReceiver(
             override fun onActivityResumed(activity: android.app.Activity) {
                 println("onActivityResumed ::${activity.localClassName}")
                 // 网络权限打开关闭的广播
-                GlobalScope.launch {
+                coroutineScope.launch {
                     withContext(Dispatchers.IO) {
                         val isEnable = isNetworkEnable()
                         println("onActivityResumed ::${activity.localClassName}  isEnable:$isEnable")
@@ -158,7 +157,7 @@ fun Context.registerNetworkReceiver(
                 // 网络权限打开
                 val cm = connectivityManager ?: return
                 val cap = cm.getNetworkCapabilities(network) ?: return
-                GlobalScope.launch {
+                coroutineScope.launch {
                     withContext(Dispatchers.IO){
                         when {
                             cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> { // wifi网络
@@ -208,7 +207,7 @@ fun Context.registerNetworkReceiver(
             override fun onReceive(context: Context?, intent: Intent?) {
                 // 网络权限打开关闭的广播
                 if (intent?.action == ConnectivityManager.CONNECTIVITY_ACTION) {
-                    GlobalScope.launch {
+                    coroutineScope.launch {
                         withContext(Dispatchers.IO) {
                             listener.invoke(isNetworkEnable())
                         }

@@ -67,7 +67,7 @@ android {
         }
     }
     sourceSets.getByName("main") {
-        this.java.srcDirs(this.java.srcDirs + file("src/main/kotlin"))
+        this.java.srcDirs(this.java.srcDirs + file("src/main/kotlin") + file("src/main/java"))
     }
 
     lint {
@@ -148,13 +148,12 @@ extensions.configure<FlutterExtension>("flutter") {
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.activity)
-//    implementation("androidx.activity:activity") {
-//        version {
-//            strictly("1.5.1")
-//        }
-//    }
+    implementation(libs.core.splashscreen)
+    implementation(libs.lottie)
+    implementation(libs.constraint)
     implementation(project(":shared"))
+//    implementation(project(":path_provider_android"))
+
     //noinspection UseTomlInstead
     compileOnly("io.flutter:flutter_embedding_debug:$flutterVersion")
-//    coreLibraryDesugaring(libs.desugar)
 }

@@ -2,6 +2,8 @@
 activity = "1.8.2"
 appcompat = "1.6.1"
 autosize = "v1.2.1"
+constraint = "2.1.4"
+coreSplashscreen = "1.0.1"
 desugar = "2.0.4"
 kotlinxDatetime = "0.5.0"
 lifecycle = "2.6.2"
@@ -15,7 +17,7 @@ agp = "8.2.0"
 #kotlin = "2.0.0-Beta1"
 kotlin = "1.9.21"
 ktorVersion = "2.3.6"
-lottie = "6.1.0"
+lottie = "6.2.0"
 coroutines = "1.8.0-RC"
 serializationVersion = "1.6.2"
 sqldelight = "2.0.1"
@@ -27,30 +29,32 @@ androidTargetSdkMinimal = "34"
 
 
 [libraries]
-activity = { module = "androidx.activity:activity", version.ref = "activity" }
-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-desugar = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar" }
-kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
-logging = { module = "org.lighthousegames:logging", version.ref = "logging" }
-connectivity = { module = "com.github.ln-12:multiplatform-connectivity-status", version.ref = "connectivity" }
-settings-noarg = { module = "com.russhwolf:multiplatform-settings-no-arg", version.ref = "settings" }
-stately-common = { module = "co.touchlab:stately-common", version.ref = "statelyCommon" }
-tencent-imsdk = { group="com.tencent.imsdk", name = "imsdk-plus", version.ref = "tencent-imsdk" }
-kotlin-test = { group="org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
-kotlin-reflect = { group="org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core",version.ref = "coroutines" }
+activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+constraint = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraint" }
+core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
+desugar = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
+lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
+logging = { group = "org.lighthousegames", name = "logging", version.ref = "logging" }
+connectivity = { group = "com.github.ln-12", name = "multiplatform-connectivity-status", version.ref = "connectivity" }
+settings-noarg = { group = "com.russhwolf", name = "multiplatform-settings-no-arg", version.ref = "settings" }
+stately-common = { group = "co.touchlab", name = "stately-common", version.ref = "statelyCommon" }
+tencent-imsdk = { group = "com.tencent.imsdk", name = "imsdk-plus", version.ref = "tencent-imsdk" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
+kotlin-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlin-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "serializationVersion" }
 kotlin-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serializationVersion" }
-autosize = { group="com.github.JessYanCoding", name = "AndroidAutoSize", version.ref = "autosize" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorVersion" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
+autosize = { group = "com.github.JessYanCoding", name = "AndroidAutoSize", version.ref = "autosize" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktorVersion" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktorVersion" }
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktorVersion" }
 ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktorVersion" }
 ktor-client-json = { group = "io.ktor", name = "ktor-client-json", version.ref = "ktorVersion" }
 ktor-client-serialization = { group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktorVersion" }
-lottie = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+lottie = { group = "com.airbnb.android", name = "lottie", version.ref = "lottie" }
 sqldelight-native-driver = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
 sqldelight-android-driver = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }
 sqldelight-runtime = { group = "app.cash.sqldelight", name = "runtime", version.ref = "sqldelight" }

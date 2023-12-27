@@ -1,37 +1,37 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.flutter_with_kmm">
 
     <uses-permission android:name="android.permission.INTERNET" />
-<!--    android:enableOnBackInvokedCallback="true"-->
-<!--    tools:targetApi="tiramisu"-->
+
     <application
         android:name=".AppDelegate"
         android:icon="@mipmap/ic_launcher"
-        android:label="flutter_with_kmm"
-        >
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:theme="@style/Theme.App.Starting"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
-            android:networkSecurityConfig="@xml/network_security_config"
-            android:theme="@style/LaunchTheme"
+            android:theme="@style/Theme.App.Starting"
             android:usesCleartextTraffic="true"
             android:windowSoftInputMode="adjustResize">
-            <!-- Specifies an Android theme to apply to this Activity as soon as
-                 the Android process has started. This theme is visible to the user
-                 while the Flutter UI initializes. After that, this theme continues
-                 to determine the Window background behind the Flutter UI. -->
+            <!-- 指定要立即应用于此 Activity 的 Android 主题
+                 Android 进程已启动。该主题对用户可见
+                 Flutter UI 初始化时。之后这个主题继续
+                 确定 Flutter UI 后面的窗口背景。 -->
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
-            <!-- Displays an Android View that continues showing the launch screen
-                 Drawable until Flutter paints its first frame, then this splash
-                 screen fades out. A splash screen is useful to avoid any visual
-                 gap between the end of Android's launch screen and the painting of
-                 Flutter's first frame. -->
+            <!-- 显示继续显示启动屏幕的 Android 视图
+                 可绘制，直到 Flutter 绘制其第一帧，然后是这个splash
+                 屏幕淡出。启动画面有助于避免任何视觉效果
+                 Android 启动屏幕末尾与绘制之间的间隙
+                 Flutter 的第一帧。-->
             <meta-data
                 android:name="io.flutter.embedding.android.SplashScreenDrawable"
                 android:resource="@drawable/launch_background" />
@@ -40,8 +40,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- Don't delete the meta-data below.
-             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <!-- 不要删除下面的元数据。
+             Flutter 工具使用它来生成 generatedPluginRegistrant.java -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

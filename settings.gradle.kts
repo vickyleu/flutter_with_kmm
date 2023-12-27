@@ -41,7 +41,8 @@ pluginManagement {
             val sourceLocation: String,
             val patchLocation: String,
             val description: String,
-            val version: String
+            val version: String,
+            val mustBeModified: Boolean = true
         )
         val properties = java.util.Properties()
         file("local.properties").inputStream().use { properties.load(it) }
@@ -106,14 +107,25 @@ pluginManagement {
                 patchLocation = "gradle_utils.dart",
                 description = "否则当前项目无法正常被编译",
                 version = flutterVersion
+            ),
+            FlutterPatch(
+                title = "Fix methodChannel loading error",
+                content = "Flutter里面原生插件固定目录导致加载不到,需要替换",
+                sourceLocation = "packages/flutter_tools/gradle/src/main/groovy",
+                patchLocation = "flutter.groovy",
+                description = "如果使用了原生插件就必须修改,否则GeneratedPluginRegistrant会找不到依赖",
+                version = flutterVersion,
+                mustBeModified = false
             )
         )
+        // Load and include Flutter plugins.
+        val pluginsFile = file(".flutter-plugins-dependencies")
         fun setupFlutterPatch(flutterSdkPath: String) {
             patches.forEach {
                 val replaceFile = file("patch/${it.version}/${it.patchLocation}")
                 val conflictDartSource =
                     file("${flutterSdkPath}/${it.sourceLocation}/${it.patchLocation}")
-                if (!replaceFile.exists()) {
+                if (!replaceFile.exists() && it.mustBeModified) {
                     throw Exception("${replaceFile.absolutePath} 文件是不能删除的!!!!")
                 }
                 if (conflictDartSource.exists()) {
@@ -149,7 +161,9 @@ pluginManagement {
                         .replace("\t", "")
                         .replace(" ", "")
 
-                    if (textReplace != text) {
+                    if (textReplace != text && it.mustBeModified) {
+                        throw exception
+                    }else if(it.patchLocation=="flutter.groovy"&&pluginsFile.exists()){
                         throw exception
                     }
                 }
@@ -193,8 +207,6 @@ dependencyResolutionManagement {
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
         maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
-
-
 }
 
 rootProject.name = "flutter_with_kmm"
@@ -213,24 +225,33 @@ gradle.beforeProject {
 // Load and include Flutter plugins.
 val flutterProjectRoot: Path = rootProject.projectDir.toPath()
 val pluginsFile: Path = flutterProjectRoot.resolve(".flutter-plugins-dependencies")
+
 if (Files.exists(pluginsFile)) {
     @Suppress("UNCHECKED_CAST")
     val map = JsonSlurper().parseText(
         pluginsFile.toFile().readText()
     ) as? Map<String, Map<String, List<Map<String, Any>>>>
 
-    val androidDirs = (map?.get("plugins")?.get("android") ?: arrayListOf())
-    for (androidDir in androidDirs) {
-        val name = androidDir["name"] as String
-        val path = androidDir["path"] as String
+    val pluginDirs = (map?.get("plugins")?.get("android") ?: arrayListOf()).mapNotNull {
+        val name = it["name"] as String
+        val path = it["path"] as String
         val needsBuild: Boolean =
-            androidDir["native_build"].let { it?.toString()?.toBooleanStrict() ?: true }
+            it["native_build"].let { it?.toString()?.toBooleanStrict() ?: true }
         if (!needsBuild) {
-            continue
+            return@mapNotNull null
         }
         val pluginDirectory = file(path).toPath().resolve("android")
-        assert(pluginDirectory.exists())
-        include(":$name")
-        project(":$name").projectDir = pluginDirectory.toFile()
+        if(pluginDirectory.exists()){
+           return@mapNotNull name to pluginDirectory.toFile().absolutePath
+        }
+        return@mapNotNull null
+    }
+    pluginDirs.forEachIndexed { index, t ->
+        val pluginName = t.first
+        val pluginPath = t.second
+        include(":${pluginName}")
+        val childProject = project(":${pluginName}")
+        childProject.projectDir = file(pluginPath)
+        rootProject.children.add(childProject)
     }
 }

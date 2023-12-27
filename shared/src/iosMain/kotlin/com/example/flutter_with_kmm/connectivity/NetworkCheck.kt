@@ -53,7 +53,7 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
                 return@block
             }
             updateState = it
-            scope.launch {
+            scope.value.launch {
                 withContext(Dispatchers.IO) {
                     try {
                         when (it) {
@@ -70,7 +70,7 @@ internal suspend fun SDKGateway.restrictedState(delay: Boolean=false): Boolean {
                                 )
                             }
                             CTCellularDataRestrictedState.kCTCellularDataRestricted -> {
-                                scope.launch{
+                                scope.value.launch{
                                     withContext(Dispatchers.IO){
                                         this@restrictedState.platform.waitActive()
                                         val canReachable = currentReachable()
