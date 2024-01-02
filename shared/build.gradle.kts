@@ -1,9 +1,6 @@
 @file:Suppress("OPT_IN_USAGE")
 
-import com.android.build.gradle.internal.ide.kmp.KotlinAndroidSourceSetMarker.Companion.android
-import org.gradle.kotlin.dsl.accessors.runtime.addConfiguredDependencyTo
-import org.jetbrains.kotlin.gradle.plugin.KotlinDependencyHandler
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.PodspecTask
@@ -20,7 +17,7 @@ plugins {
 }
 
 kotlin {
-
+//    explicitApiWarning()
     jvmToolchain(17)
     androidTarget {
         publishLibraryVariants("release")
@@ -29,6 +26,8 @@ kotlin {
                 jvmTarget = "17"
             }
         }
+        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+        unitTestVariant.sourceSetTree.set(KotlinSourceSetTree.unitTest)
     }
     /*fun configureNativeTarget(): KotlinNativeTarget.() -> Unit = {
         val xcFrameworkPathDir = project.layout.buildDirectory.get()
@@ -47,13 +46,13 @@ kotlin {
 //        iosSimulatorArm64() // TXIMSDK_Plus_iOS not support iosSimulatorArm64
     )
     iosSupported.forEach {
-       it.binaries {
-              framework {
+        it.binaries {
+            framework {
                 baseName = "shared"
                 isStatic = true
                 export("org.lighthousegames:logging:1.3.0")
-              }
-       }
+            }
+        }
     }
     applyDefaultHierarchyTemplate() // this one
 
@@ -76,8 +75,8 @@ kotlin {
             isStatic = true
         }
         pod("Reachability", "~> 3.2")
-        pod("Flutter"){
-            packageName="io.flutter.embedding.engine"
+        pod("Flutter") {
+            packageName = "io.flutter.embedding.engine"
         }
         pod("TXIMSDK_Plus_iOS") {
             // xcframework 无法正常导入
@@ -147,16 +146,24 @@ kotlin {
                 //noinspection UseTomlInstead
                 compileOnly("io.flutter:flutter_embedding_debug:${project.latestFlutterVersion()}")
                 api(libs.tencent.imsdk)
-                compileOnly(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar")))) // androidMain 添加一个项目目录下libs/下的本地jar包
+                compileOnly(
+                    fileTree(
+                        mapOf(
+                            "dir" to "libs",
+                            "include" to listOf("*.jar")
+                        )
+                    )
+                ) // androidMain 添加一个项目目录下libs/下的本地jar包
             }
         }
         // androidMain 添加一个项目目录下libs/下的本地jar包
 
 
-
-
-        val iosMain by getting {
+        val nativeMain by getting {
             dependsOn(commonMain)
+        }
+        val iosMain by getting {
+            dependsOn(nativeMain)
             dependencies {
                 implementation(libs.ktor.client.darwin)
                 implementation(libs.sqldelight.native.driver)
@@ -222,7 +229,7 @@ tasks.withType<PodspecTask>().configureEach {
         val frameworkLinkDir = projectDir.resolve("framework")
         frameworkLinkDir.createDirectory()
         projectDir.resolve("framework/${project.name}.framework").apply {
-            if(exists()){
+            if (exists()) {
                 delete()
             }
         }

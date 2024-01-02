@@ -22,6 +22,8 @@ object HarmonyCheck {
             val buildExClass = Class.forName("com.huawei.system.BuildEx")
             val osBrand = buildExClass.getMethod("getOsBrand").invoke(buildExClass)
             "Harmony".equals(osBrand?.toString(), ignoreCase = true)
+        } catch (x: ClassNotFoundException) {
+            false
         } catch (x: Throwable) {
             x.printStackTrace()
             false

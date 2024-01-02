@@ -14,13 +14,11 @@ import org.lighthousegames.logging.logging
 import platform.CoreFoundation.CFRunLoopGetCurrent
 import platform.CoreFoundation.kCFRunLoopDefaultMode
 import platform.CoreTelephony.CTCellularData
-import platform.CoreTelephony.CTCellularDataRestrictedState
 import platform.SystemConfiguration.SCNetworkReachabilityCreateWithName
 import platform.SystemConfiguration.SCNetworkReachabilityRef
 import platform.SystemConfiguration.SCNetworkReachabilityScheduleWithRunLoop
 import platform.UIKit.UIApplication
 import platform.UIKit.UIApplicationState
-import platform.UIKit.UIDevice
 import platform.darwin.TARGET_OS_SIMULATOR
 import kotlin.time.Duration.Companion.seconds
 
@@ -106,5 +104,8 @@ actual class BaseApplication(
         return TARGET_OS_SIMULATOR == 1
     }
 
+    actual fun isHotRestart(): Boolean {
+        return false
+    }
 
 }

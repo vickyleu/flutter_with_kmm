@@ -4,4 +4,5 @@ import org.lighthousegames.logging.KmLog
 
 expect class BaseApplication {
     val logger: KmLog
+    fun isHotRestart(): Boolean
 }

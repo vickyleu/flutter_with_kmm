@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import org.lighthousegames.logging.logging
 
 class AppDelegate : Application() {
+
     internal val platform = BaseApplication(this) {
         it.setMethodCallHandler { call, result ->
             try {
@@ -39,7 +40,6 @@ class AppDelegate : Application() {
 
 
     override fun onCreate() {
-        platform.logger.error { "AppDelegate onCreate: ${platform.hashCode()}" }
         registerActivityLifecycleCallbacks(activityLifecycleCallback)
         super.onCreate()
     }
@@ -78,7 +78,6 @@ class AppDelegate : Application() {
 //            }
             when (activity) {
                 is MainActivity -> {
-                    platform.logger.error { "onActivityPreCreated: ${HarmonyCheck.isHarmonyOs()}" }
                     if (platform.flutterEngine == null) {
                         activity.lifecycleScope.launch {
                             withContext(Dispatchers.IO) {

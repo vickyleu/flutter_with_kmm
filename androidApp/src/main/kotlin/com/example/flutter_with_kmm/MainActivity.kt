@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -17,10 +18,15 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
 import androidx.core.view.WindowCompat
 import androidx.core.view.children
+import androidx.lifecycle.lifecycleScope
 import com.airbnb.lottie.LottieAnimationView
 import com.example.flutter_with_kmm.utils.HarmonyCheck
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -34,11 +40,11 @@ class MainActivity : FlutterActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lottie)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if(HarmonyCheck.isHarmonyOs()){
+            if (HarmonyCheck.isHarmonyOs()) {
                 this.runOnUiThread {
                     launchLottieAnimation()
                 }
-            }else{
+            } else {
                 splashScreen.setOnExitAnimationListener { screenViewProvider ->
                     launchLottieAnimation(screenViewProvider = screenViewProvider)
                 }
@@ -50,9 +56,38 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+
+    override fun getDartEntrypointArgs(): MutableList<String> {
+        val list = mutableListOf<String>()
+        val args = super.getDartEntrypointArgs()
+        if (!args.isNullOrEmpty()) {
+            list.addAll(args)
+        }
+        // 加启动参数的地方
+        return list
+    }
+
     private fun launchLottieAnimation(screenViewProvider: SplashScreenViewProvider? = null) {
         val lottieView = findViewById<LottieAnimationView>(R.id.animationView)
+//        lottieView.setBackgroundColor(Color.WHITE)
         lottieView.enableMergePathsForKitKatAndAbove(true)
+        when (context.resources?.configuration?.uiMode?.and(Configuration.UI_MODE_NIGHT_MASK)) {
+            Configuration.UI_MODE_NIGHT_YES -> {
+                // 当前是暗黑模式
+                lottieView.setAnimation(R.raw.lottie_anim_night)
+            }
+
+            Configuration.UI_MODE_NIGHT_NO -> {
+                // 当前是亮白模式
+                lottieView.setAnimation(R.raw.lottie_anim_day)
+            }
+
+            Configuration.UI_MODE_NIGHT_UNDEFINED -> {
+                // 当前是亮白模式
+                lottieView.setAnimation(R.raw.lottie_anim_day)
+            }
+        }
+
         val contentView = findViewById<FrameLayout>(android.R.id.content)
         postFlutterView?.measure(
             View.MeasureSpec.makeMeasureSpec(contentView.width, View.MeasureSpec.EXACTLY),
@@ -159,6 +194,7 @@ class MainActivity : FlutterActivity() {
                         contentView.removeViewAt(1)
                         flutterView.alpha = 1f
                         flutterView.clearAnimation()
+                        finishFlutterLoading(flutterEngineImpl!!)
                     }
                 })
                 imageView.visibility = View.VISIBLE
@@ -166,6 +202,15 @@ class MainActivity : FlutterActivity() {
                 animatorSet.start()
             }
         })
+    }
+
+    private fun finishFlutterLoading(engine: FlutterEngine) {
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO){
+                Log.wtf("launch","isHotRestart::finishFlutterLoading")
+                appDelegate.platform.isFlutterEngineReady  = true
+            }
+        }
     }
 
     override fun onResume() {
@@ -188,4 +233,7 @@ class MainActivity : FlutterActivity() {
     val flutterEngineImpl: FlutterEngine?
         get() =
             this.flutterEngine
+
+    val appDelegate: AppDelegate
+        get() = this.application as AppDelegate
 }

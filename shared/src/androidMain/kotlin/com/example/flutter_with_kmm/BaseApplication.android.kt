@@ -11,13 +11,11 @@ actual class BaseApplication(
     private val handleFlutterEngineChange: (MethodChannel) -> Unit
 ) {
     actual val logger = logging()
-
-
+    var isFlutterEngineReady = false
     internal var networkReceiver: Any? = null
 
     // 对外暴露的属性，通过委托实现监听
     var flutterEngine: FlutterEngine? by AutoUpdateDelegate { newValue ->
-        this.logger.error { "BaseApplication handleFlutterEngineChange: ${newValue.hashCode()}" }
         handleFlutterEngineChange(newValue)
     }
         private set
@@ -54,4 +52,7 @@ actual class BaseApplication(
         flutterEngine = null
     }
 
+    actual fun isHotRestart(): Boolean {
+        return isFlutterEngineReady
+    }
 }

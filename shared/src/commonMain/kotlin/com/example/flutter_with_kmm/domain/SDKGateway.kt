@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
 
 expect suspend fun SDKGateway.isInternetGranted(): Boolean
 internal expect fun SDKGateway.platformDestroy()
-
 class SDKGateway(
     internal val interactor: SharedInteractor,
     internal val platform: BaseApplication
@@ -81,6 +80,19 @@ class SDKGateway(
 
                     }
 
+                    "isHotRestart" -> {
+                        try {
+                            val isHotRestart = this@SDKGateway.platform.isHotRestart()
+                            withContext(Dispatchers.Main) {
+                                callHandler.success(isHotRestart)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            withContext(Dispatchers.Main) {
+                                callHandler.error("${e.message}")
+                            }
+                        }
+                    }
                     else -> {
                         withContext(Dispatchers.Main) {
                             callHandler.error("Method not implemented")
@@ -119,3 +131,5 @@ class SDKGateway(
     }
 
 }
+
+

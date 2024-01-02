@@ -93,9 +93,6 @@ subprojects {
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
                         }
-                        androidProperty.sourceSets.getByName("main").apply {
-                            println("project Library:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
-                        }
                         var currentCompileSdk = (androidProperty.compileSdk ?: androidCompileSdkInt)
                         if (sdkMinimalMap.containsKey(androidCompileSdkMinimal)) {
                             val compileSdkMinimal = sdkMinimalMap[androidCompileSdkMinimal]!!
@@ -161,9 +158,6 @@ subprojects {
                         }
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
-                        }
-                        androidProperty.sourceSets.getByName("main").apply {
-                            println("project:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
                         }
                         var currentCompileSdk =
                             (androidProperty.compileSdkVersion?.toIntOrNull()

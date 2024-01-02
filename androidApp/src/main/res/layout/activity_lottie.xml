@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:colorBackground"
     tools:context=".MainActivity">
 
   <!-- Kind of cheating hear because I didn't aligned
@@ -17,8 +18,7 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent"
       app:lottie_autoPlay="false"
-      app:lottie_loop="false"
-      app:lottie_rawRes="@raw/lottie_anim" />
+      app:lottie_loop="false" />
 
   <ImageView
       android:id="@+id/imageView"

@@ -1,21 +1,23 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_with_kmm/entities/user.dart';
-import '../common/constants.dart';
-import 'gateway.dart';
 import 'package:rxdart/rxdart.dart';
 
-class Interactor {
+import '../common/constants.dart';
+import 'gateway.dart';
 
+class Interactor {
   StreamController<String> errorStream = StreamController<String>.broadcast();
   StreamController<bool> progressStream = StreamController<bool>.broadcast();
-  StreamController<Map<String,dynamic>> nativeStream = StreamController<Map<String,dynamic>>.broadcast();
+  StreamController<Map<String, dynamic>> nativeStream =
+      StreamController<Map<String, dynamic>>.broadcast();
   final usersStream = BehaviorSubject<List<User>>();
 
   bool isInitialized = false;
 
-  init() async{
+  init() async {
     setPlatformCallsListeners();
     isInitialized = true;
   }
@@ -27,14 +29,14 @@ class Interactor {
     });
   }
 
+  List get nativeMethod => [InternetGranted];
 
-
-  List get nativeMethod  => [InternetGranted];
   Future<List<User>?> getUsers(int page, int results) async {
     return doOnKMM(() async {
       String? users = await Gateway.getUsers(page, results);
       List<User> res = (json.decode(users!) as List)
-          .map((model) => User.fromJson(model)).toList();
+          .map((model) => User.fromJson(model))
+          .toList();
       return res;
     });
   }
@@ -45,27 +47,28 @@ class Interactor {
     });
   }
 
-  void setPlatformCallsListeners(){
+  void setPlatformCallsListeners() {
     var onUsersUpdate = (String result) {
-      var users = (json.decode(result) as List).map((model) =>
-          User.fromJson(model)).toList();
+      var users = (json.decode(result) as List)
+          .map((model) => User.fromJson(model))
+          .toList();
       usersStream.add(users);
     };
 
-    var onNativeCall = (Map<String,dynamic> result) {
+    var onNativeCall = (Map<String, dynamic> result) {
       print("onNativeCall: $result");
-      if(nativeMethod.contains(result['method'])){
+      if (nativeMethod.contains(result['method'])) {
         nativeStream.add(result);
       }
     };
-    Gateway.setPlatformCallsListeners(onUsersUpdate,onNativeCall);
+    Gateway.setPlatformCallsListeners(onUsersUpdate, onNativeCall);
   }
 
   updateProgress(bool state) {
     progressStream.add(state);
   }
 
-  Future<T?> doOnKMM<T> (Function toDo) async{
+  Future<T?> doOnKMM<T>(Function toDo) async {
     try {
       return await toDo();
     } on PlatformException catch (e) {
@@ -78,26 +81,26 @@ class Interactor {
   void retry(VoidCallback callback) {
     // 只监听一次
     StreamSubscription<Map<String, dynamic>>? sub;
-    sub= nativeStream.stream.listen((Map<String,dynamic> result) {
+    sub = nativeStream.stream.listen((Map<String, dynamic> result) {
       final String method = result['method'];
-      if(method == InternetGranted){
-        final Map<String,dynamic> args = result['args'] as Map<String,dynamic>;
-        final SDKNetworkGrantedType type =SDKNetworkGrantedType.fromString(args['Granted']);
-        switch(type){
-          case SDKNetworkGrantedType.Accessible:{
-            callback();
-            sub?.cancel();
-            sub=null;
-          }
-          case SDKNetworkGrantedType.Restricted:{
-
-          }
-          case SDKNetworkGrantedType.Unknown:{
-
-          }
+      if (method == InternetGranted) {
+        final Map<String, dynamic> args =
+            result['args'] as Map<String, dynamic>;
+        final SDKNetworkGrantedType type =
+            SDKNetworkGrantedType.fromString(args['Granted']);
+        switch (type) {
+          case SDKNetworkGrantedType.Accessible:
+            {
+              callback();
+              sub?.cancel();
+              sub = null;
+            }
+          case SDKNetworkGrantedType.Restricted:
+            {}
+          case SDKNetworkGrantedType.Unknown:
+            {}
         }
       }
     });
   }
-
 }
