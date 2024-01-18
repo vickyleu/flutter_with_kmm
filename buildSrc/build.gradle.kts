@@ -12,6 +12,6 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    compileOnly("com.android.tools.build:gradle:8.2.0")
+    compileOnly("com.android.tools.build:gradle:8.2.1")
 //    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.21")
 }
