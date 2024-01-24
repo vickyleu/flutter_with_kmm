@@ -62,7 +62,6 @@ sqldelight-coroutines-extensions = { group = "app.cash.sqldelight", name = "coro
 
 [plugins]
 flutter-plugin = { id = "dev.flutter.flutter-gradle-plugin", version = "1.0.0" }
-flutter-loader = { id = "dev.flutter.flutter-plugin-loader", version = "1.0.0" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

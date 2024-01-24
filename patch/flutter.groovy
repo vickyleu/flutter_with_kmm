@@ -394,6 +394,7 @@ class FlutterPlugin implements Plugin<Project> {
      * Finally, the project's `settings.gradle` loads each plugin's android directory as a subproject.
      */
     private void configurePlugins() {
+
         getPluginList().each this.&configurePluginProject
         getPluginDependencies().each this.&configurePluginDependencies
     }
@@ -556,7 +557,9 @@ class FlutterPlugin implements Plugin<Project> {
     }
 
     private Properties getPluginList() {
-        File pluginsFile = new File(project.projectDir.parentFile.parentFile, '.flutter-plugins')
+        // 判断根项目是否包含KMM插件
+        boolean isKmmModule = new File(project.rootProject.projectDir, 'shared').exists()
+        File pluginsFile = new File(isKmmModule?project.projectDir.parentFile:project.projectDir.parentFile.parentFile, '.flutter-plugins')
         Properties allPlugins = readPropertiesIfExist(pluginsFile)
         Properties androidPlugins = new Properties()
         allPlugins.each { name, path ->
@@ -630,7 +633,9 @@ class FlutterPlugin implements Plugin<Project> {
     private static Properties readPropertiesIfExist(File propertiesFile) {
         Properties result = new Properties()
         if (propertiesFile.exists()) {
-            propertiesFile.withReader('UTF-8') { reader -> result.load(reader) }
+            propertiesFile.withReader('UTF-8') { reader ->
+                result.load(reader)
+            }
         }
         return result
     }
@@ -1138,7 +1143,6 @@ class FlutterPlugin implements Plugin<Project> {
             }
             return copyFlutterAssetsTask
         } // end def addFlutterDeps
-
         if (isFlutterAppProject()) {
             project.android.applicationVariants.all { variant ->
                 Task assembleTask = getAssembleTask(variant)

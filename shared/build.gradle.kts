@@ -28,7 +28,7 @@ kotlin {
 //    explicitApiWarning()
     jvmToolchain(17)
     androidTarget {
-        publishLibraryVariants("release")
+        publishLibraryVariants("release","profile","debug")
         compilations.all {
             kotlinOptions {
                 jvmTarget = "17"

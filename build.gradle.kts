@@ -17,7 +17,6 @@ plugins {
     alias(libs.plugins.sqldelight) apply false
 
     alias(libs.plugins.flutter.plugin) apply false
-//    alias(libs.plugins.flutter.loader)
 }
 
 val javaVersion = JavaVersion.toVersion(libs.versions.jdk.get())
@@ -35,9 +34,7 @@ subprojects {
         }
     }
     if (System.getenv("JITPACK") == null) {
-//        if(project.name != "shared"){ // shared 模块不能设置build目录，否则会导致cocoapods无法链接shared.framework
             this.layout.buildDirectory.set(file("${rootProject.layout.buildDirectory.get().asFile.absolutePath}/${project.name}"))
-//        }
     }
     configurations.all {
         resolutionStrategy.eachDependency {
@@ -50,11 +47,7 @@ subprojects {
                 } catch (ignore: Exception) {
                     println("${ignore.message}}")
                 }
-            } /*else if (requested.group == libs.kotlin.coroutines.get().group
-                && requested.name == libs.kotlin.coroutines.get().name
-            ) {
-                useVersion(libs.versions.coroutines.get())
-            }*/
+            }
         }
     }
 
@@ -83,8 +76,10 @@ subprojects {
                 if (this.hasProperty("android") && this.name != "gradle") {
                     val androidProperty = this.property("android")
                     if (androidProperty is com.android.build.gradle.LibraryExtension) {
+                        val sourceSets = androidProperty.sourceSets.getByName("main")
+                        sourceSets.java.srcDirs(sourceSets.java.srcDirs + file("src/main/kotlin") + file("src/main/java"))
                         if (androidProperty.namespace == null) {
-                            androidProperty.sourceSets.getByName("main").manifest.srcFile.also {
+                            sourceSets.manifest.srcFile.also {
                                 val manifest = XmlSlurper().parse(file(it))
                                 val packageName = manifest.getProperty("@package").toString()
                                 androidProperty.namespace = packageName
@@ -92,6 +87,9 @@ subprojects {
                         }
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
+                        }
+                        androidProperty.sourceSets.getByName("main").apply {
+                            println("project Library:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
                         }
                         var currentCompileSdk = (androidProperty.compileSdk ?: androidCompileSdkInt)
                         if (sdkMinimalMap.containsKey(androidCompileSdkMinimal)) {
@@ -148,8 +146,10 @@ subprojects {
 
                     }
                     else if (androidProperty is com.android.build.gradle.TestedExtension) {
+                        val sourceSets = androidProperty.sourceSets.getByName("main")
+                        sourceSets.java.srcDirs(sourceSets.java.srcDirs + file("src/main/kotlin") + file("src/main/java"))
                         if (androidProperty.namespace == null) {
-                            androidProperty.sourceSets.getByName("main").manifest.srcFile.also {
+                            sourceSets.manifest.srcFile.also {
                                 val manifest = XmlSlurper().parse(file(it))
                                 val packageName = manifest.getProperty("@package").toString()
                                 println("Setting $packageName as android namespace")
@@ -158,6 +158,9 @@ subprojects {
                         }
                         androidProperty.buildFeatures.apply {
                             buildConfig = true
+                        }
+                        androidProperty.sourceSets.getByName("main").apply {
+                            println("project:${this@subprojects.name} Setting sourceSets +++ ${this.java.srcDirs}")
                         }
                         var currentCompileSdk =
                             (androidProperty.compileSdkVersion?.toIntOrNull()

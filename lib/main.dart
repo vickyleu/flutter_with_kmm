@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_with_kmm/common/type_convert.dart';
 import 'package:flutter_with_kmm/presentation/splash/splash_guide_cubit.dart';
 import 'package:flutter_with_kmm/presentation/user_info/user_info_cubit.dart';
 import 'package:fps_monitor/widget/custom_widget_inspector.dart';
@@ -22,7 +23,7 @@ Future<void> main(List<String> args) async {
   while (!platformReady) {
     try {
       // 必须当flutter引擎加载完成,原生已经获取到flutter引擎的实例才开始绘制flutter的视图
-      isHotRestart = bool.parse(await platform.invokeMethod("isHotRestart") as String);
+      isHotRestart = toBool(await platform.invokeMethod("isHotRestart"));
       platformReady = true;
     } catch (e) {
       print("isHotRestart::::${e}");

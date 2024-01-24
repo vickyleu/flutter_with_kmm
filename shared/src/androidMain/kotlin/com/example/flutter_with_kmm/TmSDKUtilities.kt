@@ -8,7 +8,6 @@ import com.tencent.imsdk.v2.V2TIMSDKConfig
 import com.tencent.imsdk.v2.V2TIMSDKListener
 import com.tencent.imsdk.v2.V2TIMUserFullInfo
 import com.tencent.imsdk.v2.V2TIMUserStatus
-import com.tencent.wework.api.WWAPIFactory
 
 actual class TmSDKUtilities: V2TIMSDKListener() {
     actual fun initSdk() {
