@@ -46,9 +46,16 @@ pluginManagement {
         )
         val properties = java.util.Properties()
         file("local.properties").inputStream().use { properties.load(it) }
-        val flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert(flutterSdkPath != null) {
-            "flutter.sdk not set in local.properties"
+        var flutterSdkPath = properties.getProperty("flutter.sdk")
+        if(flutterSdkPath.isNullOrBlank()){
+           ProcessBuilder("flutter pub get".split(" ")).start().inputStream.bufferedReader()
+                    .readText()
+            val properties = java.util.Properties()
+            file("local.properties").inputStream().use { properties.load(it) }
+            flutterSdkPath = properties.getProperty("flutter.sdk")
+        }
+        if(flutterSdkPath.isNullOrBlank()){
+            throw RuntimeException("flutter.sdk not set in local.properties, please run \"flutter pub get\" first")
         }
         //需要兼容Windows,macos,linux
         //should absolute path by xcode analyze,https://github.com/flutter/flutter/issues/110069#issuecomment-1223963568
