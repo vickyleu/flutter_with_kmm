@@ -27,6 +27,7 @@ actual class BaseApplication(
     val app: UIApplication,
     private val handleFlutterEngineChange: (FlutterMethodChannel) -> Unit
 ) {
+    var isFlutterEngineReady = false
     actual val logger = logging()
     private var flutterEngine: FlutterEngine? by AutoUpdateDelegate { newValue ->
         handleFlutterEngineChange(newValue)
@@ -44,6 +45,7 @@ actual class BaseApplication(
         controller.engine()?.apply {
             addEngineLifecycleListener(lifecycle, controller)
             flutterEngine = this
+            isFlutterEngineReady = true
         }
     }
 
@@ -105,7 +107,7 @@ actual class BaseApplication(
     }
 
     actual fun isHotRestart(): Boolean {
-        return false
+        return isFlutterEngineReady
     }
 
 }

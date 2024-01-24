@@ -63,19 +63,6 @@ class AppDelegate : Application() {
 
     private val activityLifecycleCallback = object : ActivityLifecycleCallbacks {
         override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
-//            when (activity) {
-//                is ComponentActivity -> {
-//                    activity.onBackPressedDispatcher.addCallback(
-//                        activity,
-//                        object : OnBackPressedCallback(true) {
-//                            override fun handleOnBackPressed() {
-//                                if (!activity.isFinishing) {
-//                                    activity.finish()
-//                                }
-//                            }
-//                        })
-//                }
-//            }
             when (activity) {
                 is MainActivity -> {
                     if (platform.flutterEngine == null) {

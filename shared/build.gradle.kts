@@ -1,6 +1,7 @@
 @file:Suppress("OPT_IN_USAGE")
 
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+import org.jetbrains.kotlin.gradle.plugin.cocoapods.CocoapodsExtension.CocoapodsDependency.PodLocation.Path
 import org.jetbrains.kotlin.gradle.targets.native.tasks.PodGenTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.PodspecTask
@@ -14,9 +15,16 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.kotlin.atomicfu)
+//    id("com.chromaticnoise.multiplatform-swiftpackage") version "2.0.3"
 }
 
 kotlin {
+//    multiplatformSwiftPackage {
+//        swiftToolsVersion("5.3")
+//        targetPlatforms {
+//            iOS { v("12") }
+//        }
+//    }
 //    explicitApiWarning()
     jvmToolchain(17)
     androidTarget {
@@ -95,6 +103,11 @@ kotlin {
 //                "-libraryPath", xcFrameworkPathDir.absolutePath
             )
         }
+        pod("Cyborg") {
+            version = "0.7"
+            source = path(file("../shared/libs/Cyborg"))
+            extraOpts += listOf("-compiler-option", "-fmodules")
+        }
         extraSpecAttributes["libraries"] = "'c++', 'sqlite3'" //导入系统库
         extraSpecAttributes["resources"] =
             "['src/commonMain/resources/**', 'src/iosMain/resources/**']"
@@ -146,14 +159,8 @@ kotlin {
                 //noinspection UseTomlInstead
                 compileOnly("io.flutter:flutter_embedding_debug:${project.latestFlutterVersion()}")
                 api(libs.tencent.imsdk)
-                compileOnly(
-                    fileTree(
-                        mapOf(
-                            "dir" to "libs",
-                            "include" to listOf("*.jar")
-                        )
-                    )
-                ) // androidMain 添加一个项目目录下libs/下的本地jar包
+                compileOnly(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.aar")))) // androidMain 添加一个项目目录下libs/下的本地jar包
+
             }
         }
         // androidMain 添加一个项目目录下libs/下的本地jar包
@@ -212,10 +219,12 @@ tasks.withType<PodGenTask>().configureEach {
 }
 tasks.withType<PodspecTask>().configureEach {
     doLast {
+        val pods = this@configureEach.pods.get().filter { it.source is Path }
         //TODO  podspec cannot ref framework from parent dir, so we need to copy symbol link to current dir
         outputFile.apply {
-            CocoapodsAppender.Builder(this)
-                .replace(
+            val builder = CocoapodsAppender.Builder(this)
+
+            builder.replace(
                     "spec.vendored_frameworks",
                     "    spec.vendored_frameworks      = 'framework/${project.name}.framework'"
                 )
@@ -270,6 +279,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguards/proguard-rules.pro"
             )
+        }
+        create("profile") {
         }
     }
 }

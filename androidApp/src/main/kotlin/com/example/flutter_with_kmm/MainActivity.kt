@@ -24,14 +24,13 @@ import com.example.flutter_with_kmm.utils.HarmonyCheck
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import kotlin.math.max
-
+import com.tencent.imsdk.v2.V2TIMManager
 
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,8 +113,14 @@ class MainActivity : FlutterActivity() {
         if (screenViewProvider != null && delayTime != null) {
             // Once the delay expires, we start the lottie animation
             lottieView.postDelayed({
-                screenViewProvider.view.alpha = 0f
-                screenViewProvider.iconView.alpha = 0f
+                try {
+                    screenViewProvider.view.alpha = 0f
+                } catch (ignored: Exception) {
+                }
+                try {
+                    screenViewProvider.iconView.alpha = 0f
+                } catch (ignored: Exception) {
+                }
                 lottieView.playAnimation()
             }, delayTime)
         } else {
@@ -206,9 +211,9 @@ class MainActivity : FlutterActivity() {
 
     private fun finishFlutterLoading(engine: FlutterEngine) {
         lifecycleScope.launch {
-            withContext(Dispatchers.IO){
-                Log.wtf("launch","isHotRestart::finishFlutterLoading")
-                appDelegate.platform.isFlutterEngineReady  = true
+            withContext(Dispatchers.IO) {
+                Log.wtf("launch", "isHotRestart::finishFlutterLoading")
+                appDelegate.platform.isFlutterEngineReady = true
             }
         }
     }

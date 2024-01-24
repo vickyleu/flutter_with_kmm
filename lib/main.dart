@@ -14,18 +14,22 @@ import 'presentation/saved_users/saved_users_cubit.dart';
 import 'presentation/users/users_cubit.dart';
 import 'route/app_router.dart';
 
-Future<void> main(List<String> arg) async {
+/// 启动入口,args是从原生传递过来的参数,但是此方法不适用热重启,flutter引擎获得的参数不会再改变了
+Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
   var platformReady = false;
   bool isHotRestart = true;
   while (!platformReady) {
     try {
-      isHotRestart = await platform.invokeMethod("isHotRestart");
+      // 必须当flutter引擎加载完成,原生已经获取到flutter引擎的实例才开始绘制flutter的视图
+      isHotRestart = bool.parse(await platform.invokeMethod("isHotRestart") as String);
       platformReady = true;
     } catch (e) {
+      print("isHotRestart::::${e}");
       platformReady = false;
     }
   }
+  // 绘制布局边界
   debugPaintSizeEnabled = true;
   runApp(FlutterWithKmmApp(isHotRestart: isHotRestart));
 }
@@ -91,8 +95,14 @@ class FlutterWithKmmApp extends StatelessWidget {
               if (screenSize.isEmpty) {
                 return Container();
               }
-              return AppStateWidget(child,
-                  isHotRestart: isHotRestart, screenSize: screenSize);
+              if (child is Router<Object>) {
+                final config = child.routerDelegate.currentConfiguration;
+                if (config is RouteMatchList && config.isEmpty) {
+                  return AppStateWidget(child,
+                      isHotRestart: isHotRestart, screenSize: screenSize);
+                }
+              }
+              return CustomWidgetInspector(child: child ?? Container());
             },
             routerConfig: AppRouter.router(_navigatorKey),
             scaffoldMessengerKey: _scaffoldKey,
@@ -185,7 +195,7 @@ class _AppState extends State<AppStateWidget>
     SchedulerBinding.instance.addPostFrameCallback((t) {
       final curved = CurvedAnimation(
         parent: animationController!,
-        curve: Curves.easeIn, // 选择合适的插值器
+        curve: Curves.fastEaseInToSlowEaseOut, // 选择合适的插值器
       );
       animation1 =
           Tween(begin: Offset(0, -widget.screenSize.height), end: Offset(0, 0))
@@ -235,7 +245,7 @@ class _AppState extends State<AppStateWidget>
     await Future.delayed(Duration(milliseconds: 100)).then((value) async {
       bool isHotRestart = true;
       try {
-        isHotRestart = await platform.invokeMethod("isHotRestart");
+        isHotRestart = bool.parse(await platform.invokeMethod("isHotRestart") as String);
         if (!isHotRestart) {
           await waitForLoading(callback);
           return;

@@ -13,7 +13,7 @@ fun available(version: Float): Boolean {
 
 fun available(version: String): Boolean {
     val vStr1 = UIDevice.currentDevice.systemVersion
-    var maxSize = 0
+    var maxSize: Int
     val list1 = mutableListOf<Int>()
     val list2 = mutableListOf<Int>()
     if (vStr1.contains(".")) {

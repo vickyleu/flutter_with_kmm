@@ -12,7 +12,7 @@ import shared
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
-        IdiotFlutterBridge.register(with:  self)
+        
         
         // 获取主窗口
         guard let window = UIApplication.shared.windows.first else {
@@ -38,17 +38,19 @@ import shared
         gateway = SharedSDK(driverFactory: DatabaseDriverFactory(),platform: platform!).gateway
         // 获取主窗口的根视图控制器
         if let flutterViewController = window.rootViewController as? FlutterViewController {
-            // 在这里你可以访问或操作主窗口的根视图控制器
-            lifecyle = SwiftEngineLifecycleListener(
-                onPreEngineRestart: { [weak self] in
-                    self?.onFlutterResume()
-                },
-                onEngineWillDestroy: { [weak self] in
-                    self?.onFlutterDestroy()
-                }
-            )
+                        // 在这里你可以访问或操作主窗口的根视图控制器
+                        lifecyle = SwiftEngineLifecycleListener(
+                            onPreEngineRestart: { [weak self] in
+                                self?.onFlutterResume()
+                            },
+                            onEngineWillDestroy: { [weak self] in
+                                self?.onFlutterDestroy()
+                            }
+                        )
             onFlutterCreate(flutterViewController)
         }
+        IdiotFlutterBridge.register(with:  self)
+
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     

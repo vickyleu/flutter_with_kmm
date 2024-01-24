@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:drawable="@drawable/lottie_uooc_test">
+    <target android:name="resizeGroup">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="scaleX"
+                    android:valueFrom="1"
+                    android:valueTo="0.38" />
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="0.38"  />
+            </set>
+        </aapt:attr>
+    </target>
+
+    <target android:name="rotationGroup1">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:valueFrom="360"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="rotationGroup2">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:valueFrom="360"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="rotationGroup3">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:valueFrom="360"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="rotationGroup4">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:duration="?windowSplashScreenAnimationDuration"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:propertyName="rotation"
+                    android:valueFrom="360"
+                    android:valueTo="0" />
+            </set>
+        </aapt:attr>
+    </target>
+</animated-vector>

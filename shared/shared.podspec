@@ -9,6 +9,7 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'framework/shared.framework'
                 
     spec.ios.deployment_target = '12.0'
+    spec.dependency 'Cyborg', '0.7'
     spec.dependency 'Flutter'
     spec.dependency 'Reachability', '~> 3.2'
     spec.dependency 'TXIMSDK_Plus_iOS', '7.6.5021'

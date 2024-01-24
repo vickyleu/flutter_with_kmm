@@ -222,6 +222,7 @@ dependencyResolutionManagement {
                                 "macos-aarch64",
                                 "osx-x86_64",
                                 "osx-aarch64",
+                                "linux-aarch64",
                                 "linux-x86_64",
                                 "windows-x86_64",
                         ).forEach { os ->
