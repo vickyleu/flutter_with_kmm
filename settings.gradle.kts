@@ -141,6 +141,9 @@ pluginManagement {
         )
         // Load and include Flutter plugins.
         val pluginsFile = file(".flutter-plugins-dependencies")
+        val tips = "小提示: 不用担心,我观察了好多个版本的flutter,很久没更新了,所以多个版本间是适用的,文件替换不会影响到已有的项目" %
+                "Tips: Don't worry, I have observed many versions of flutter, it hasn't been updated for a long time, so it is applicable between multiple versions, and file replacement will not affect existing projects"
+
         fun checkSource(
             conflictDartSource: File,
             it: FlutterPatch,
@@ -174,6 +177,8 @@ pluginManagement {
         flutter pub get
         ```
         ${if (isChinese) it.description.chn else it.description.eng}
+        
+        ${if (isChinese) tips.chn else tips.eng}
                         """.trimIndent()
             )
             val textReplace = replaceFile.readText()
