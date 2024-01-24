@@ -35,14 +35,22 @@ pluginManagement {
     var sdkPathExists = false
 
     fun applyFlutterPatch(): String {
+
+        data class Bilingual(val chn: String, val eng: String)
+        // 以下纠正
+        operator fun String.rem(other: String): Bilingual {
+            return Bilingual(this, other)
+        }
+
         data class FlutterPatch(
-            val title: String,
-            val content: String,
+            val title: Bilingual,
+            val content: Bilingual,
             val sourceLocation: String,
             val patchLocation: String,
-            val description: String,
-//            val version: String,
-            val mustBeModified: Boolean = true
+            val description: Bilingual,
+//            val version: String,// no need
+            val mustBeModified: Boolean = true,
+            val alert: Bilingual? = null,
         )
         val properties = java.util.Properties()
         file("local.properties").inputStream().use { properties.load(it) }
@@ -50,7 +58,6 @@ pluginManagement {
         if(flutterSdkPath.isNullOrBlank()){
            ProcessBuilder("flutter pub get".split(" ")).start().inputStream.bufferedReader()
                     .readText()
-            val properties = java.util.Properties()
             file("local.properties").inputStream().use { properties.load(it) }
             flutterSdkPath = properties.getProperty("flutter.sdk")
         }
@@ -84,49 +91,117 @@ pluginManagement {
 
         val patches = listOf(
             FlutterPatch(
-                title = "Fix Kotlin DSL bug",
-                content = "由于Flutter官方存在kotlin DSL解析的bug",
+                title = "修复Kts解析" % "Fix Kotlin DSL detection error",
+                content = "由于Flutter官方存在kotlin DSL解析的bug" % "There is a bug in the official kotlin DSL parsing",
                 sourceLocation = "packages/flutter_tools/lib/src",
                 patchLocation = "project.dart",
-                description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译",
+                description =
+                ("给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n" +
+                        "否则当前项目无法正常被编译") % "I have given the official issue https://github.com/flutter/flutter/issues/134721\n but they are unwilling to change",
 //                version = flutterVersion
             ),
             FlutterPatch(
-                title = "Fix KMM parse error",
-                content = "Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下",
+                title = "修复KMM项目结构解析错误" % "Fix KMM project structure parsing error",
+                content = ("Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下")
+                % ("Flutter is fixed to take the upper directory of the Android build directory to generate the compilation file under build, which is estimated to come from dart,\n" +
+                        "Here you need to replace the main method of dart, and reposition the compilation directory of globals.localFileSystem to the build directory of the current KMM"),
                 sourceLocation = "packages/flutter_tools/lib",
                 patchLocation = "executable.dart",
-                description = "否则当前项目无法正常被编译",
+                description = "否则当前项目无法正常被编译" % "Otherwise, the current project cannot be compiled normally",
 //                version = flutterVersion
             ),
             FlutterPatch(
-                title = "Fix KMM parse error",
-                content = "Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下",
+                title = "修复KMM项目结构解析错误" % "Fix KMM project structure parsing error",
+                content = ("Flutter是固定的取Android构建目录的上层目录去生成build下的编译文件,估计是来源于dart,\n这里需要替换掉dart的main方法,把globals.localFileSystem的编译目录重新定位到当前KMM中的build目录下")
+                        % ("Flutter is fixed to take the upper directory of the Android build directory to generate the compilation file under build, which is estimated to come from dart,\n" +
+                        "Here you need to replace the main method of dart, and reposition the compilation directory of globals.localFileSystem to the build directory of the current KMM"),
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle.dart",
-                description = "否则当前项目无法正常被编译",
+                description = "否则当前项目无法正常被编译" % "Otherwise, the current project cannot be compiled normally",
 //                version = flutterVersion
             ),
             FlutterPatch(
-                title = "Fix agp plugin too high error",
-                content = "Flutter默认最大支持AGP8.1,强制替换成最大支持8.3",
+                title = "修复AGP插件过高错误" % "Fix AGP plugin too high error",
+                content = "Flutter默认最大支持AGP8.1,强制替换成最大支持8.3" % "Flutter defaults to a maximum support for AGP8.1, and forcibly replaces it with a maximum support for 8.3",
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle_utils.dart",
-                description = "否则当前项目无法正常被编译",
+                description = "否则当前项目无法正常被编译" % "Otherwise, the current project cannot be compiled normally",
 //                version = flutterVersion
             ),
             FlutterPatch(
-                title = "Fix methodChannel loading error",
-                content = "Flutter里面原生插件固定目录导致加载不到,需要替换",
+                title = "修复methodChannel加载错误" % "Fix methodChannel loading error",
+                content = "Flutter里面原生插件固定目录导致加载不到,需要替换" % "The fixed directory of the native plugin in Flutter causes it to fail to load and needs to be replaced",
                 sourceLocation = "packages/flutter_tools/gradle/src/main/groovy",
                 patchLocation = "flutter.groovy",
-                description = "如果使用了原生插件就必须修改,否则GeneratedPluginRegistrant会找不到依赖",
+                description = "如果使用了原生插件就必须修改,否则GeneratedPluginRegistrant会找不到依赖" % "If you use native plugins, you must modify them, otherwise GeneratedPluginRegistrant will not find the dependencies",
 //                version = flutterVersion,
-                mustBeModified = false
+                mustBeModified = false,
+                alert = "请小心,你的flutter.groovy文件中包含了@java.util.Optional注解,是由于复制代码时被系统自动修改的,脚本会尝试自动修复" % "Please be careful, your flutter.groovy file contains the @java.util.Optional annotation, which is automatically modified by the system when copying code, and the script will try to fix it automatically"
             )
         )
         // Load and include Flutter plugins.
         val pluginsFile = file(".flutter-plugins-dependencies")
+        fun checkSource(
+            conflictDartSource: File,
+            it: FlutterPatch,
+            replaceFile: File,
+            flutterSdkPath: String
+        ) {
+            val text = conflictDartSource.readText()
+                .trimIndent()
+                .replace("\r\n", "")
+                .replace("\n", "")
+                .replace("\t", "")
+                .replace(" ", "")
+
+            // 获得当前语言环境是否是中文,非中文就是英文
+            val isChinese = java.util.Locale.getDefault().language == "zh"
+            val exception = Exception(
+                """
+        ////// ${if (isChinese) it.title.chn else it.title.eng} /////
+        ${if (isChinese) it.content.chn else it.content.eng}
+        ${if (isChinese) "请将" else "Please replace"}
+        ====>>
+        //${conflictDartSource.absolutePath} 
+        <<=== ${if (isChinese) "替换成" else "this source file with"}
+        //${replaceFile.absolutePath} ${if (isChinese) "的内容" else " content"},
+        
+        ${if (isChinese) "然后执行如下命令生成新的源码快照" else "Then execute the following command to generate a new source snapshot"}
+        
+        ```
+        rm ${flutterSdkPath}/bin/cache/flutter_tools.stamp & \
+        rm ${flutterSdkPath}/bin/cache/flutter_tools.snapshot & \
+        flutter pub get
+        ```
+        ${if (isChinese) it.description.chn else it.description.eng}
+                        """.trimIndent()
+            )
+            val textReplace = replaceFile.readText()
+                .trimIndent()
+                .replace("\r\n", "\n")
+                .replace("\n", "")
+                .replace("\t", "")
+                .replace(" ", "")
+
+            if (textReplace != text && it.mustBeModified) {
+                throw exception
+            } else if (textReplace != text && it.patchLocation == "flutter.groovy" && pluginsFile.exists()) {
+                if (text.contains("@java.util.Optional")) { //说明已经修改了,但是被系统替换
+                    //那么直接把conflictDartSource文件中的@java.util.Optional 替换成 @Optional
+                    if (it.alert != null) {
+                        println("warning:${if (isChinese) it.alert.chn else it.alert.eng}")
+                    }
+                    val textReplace2 =
+                        conflictDartSource.readText().replace("@java.util.Optional", "@Optional")
+                    conflictDartSource.writeText(textReplace2)
+
+                    checkSource(conflictDartSource, it, replaceFile, flutterSdkPath)
+                } else {
+                    throw exception
+                }
+            }
+        }
+
         fun setupFlutterPatch(flutterSdkPath: String) {
             patches.forEach {
                 val replaceFile = file("patch/${it.patchLocation}") //${it.version} flutter版本号,查看了好多个版本的更新,发现并没有很大区别,所以这里不需要区分版本号
@@ -136,43 +211,7 @@ pluginManagement {
                     throw Exception("${replaceFile.absolutePath} 文件是不能删除的!!!!")
                 }
                 if (conflictDartSource.exists()) {
-                    val text = conflictDartSource.readText()
-                        .trimIndent()
-                        .replace("\r\n", "")
-                        .replace("\n", "")
-                        .replace("\t", "")
-                        .replace(" ", "")
-
-                    val exception = Exception(
-                        """
-//////////////////////////// ${it.title}  ////////////////////////////
-                    ${it.content}
-                    请将 ===>> file://${conflictDartSource.absolutePath} <<=== 源文件
-                    替换成 ${replaceFile.absolutePath} ,
-
-                    然后执行如下命令生成新的源码快照
-                    ```
-                    rm ${flutterSdkPath}/bin/cache/flutter_tools.stamp & \
-                    rm ${flutterSdkPath}/bin/cache/flutter_tools.snapshot & \
-                    flutter pub get
-
-                    ```
-                    ${it.description}
-
-                """.trimIndent()
-                    )
-                    val textReplace = replaceFile.readText()
-                        .trimIndent()
-                        .replace("\r\n", "\n")
-                        .replace("\n", "")
-                        .replace("\t", "")
-                        .replace(" ", "")
-
-                    if (textReplace != text && it.mustBeModified) {
-                        throw exception
-                    }else if(textReplace != text && it.patchLocation=="flutter.groovy" && pluginsFile.exists()){
-                        throw exception
-                    }
+                    checkSource(conflictDartSource, it, replaceFile, flutterSdkPath)
                 }
             }
         }
