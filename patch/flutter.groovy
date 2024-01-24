@@ -38,7 +38,7 @@ import org.gradle.internal.os.OperatingSystem
  *
  * Learn more about extensions in Gradle:
  *  * https://docs.gradle.org/8.0.2/userguide/custom_plugins.html#sec:getting_input_from_the_build
-*/
+ */
 class FlutterExtension {
     /** Sets the compileSdkVersion used by default in Flutter app projects. */
     static int compileSdkVersion = 33
@@ -122,10 +122,10 @@ class FlutterPlugin implements Plugin<Project> {
 
     /** Maps platforms to ABI architectures. */
     private static final Map PLATFORM_ARCH_MAP = [
-        (PLATFORM_ARM32)    : ARCH_ARM32,
-        (PLATFORM_ARM64)    : ARCH_ARM64,
-        (PLATFORM_X86)      : ARCH_X86,
-        (PLATFORM_X86_64)   : ARCH_X86_64,
+            (PLATFORM_ARM32)    : ARCH_ARM32,
+            (PLATFORM_ARM64)    : ARCH_ARM64,
+            (PLATFORM_X86)      : ARCH_X86,
+            (PLATFORM_X86_64)   : ARCH_X86_64,
     ]
 
     /**
@@ -134,17 +134,17 @@ class FlutterPlugin implements Plugin<Project> {
      * Otherwise, the Play Store will complain that the APK variants have the same version.
      */
     private static final Map ABI_VERSION = [
-        (ARCH_ARM32)        : 1,
-        (ARCH_ARM64)        : 2,
-        (ARCH_X86)          : 3,
-        (ARCH_X86_64)       : 4,
+            (ARCH_ARM32)        : 1,
+            (ARCH_ARM64)        : 2,
+            (ARCH_X86)          : 3,
+            (ARCH_X86_64)       : 4,
     ]
 
     /** When split is enabled, multiple APKs are generated per each ABI. */
     private static final List DEFAULT_PLATFORMS = [
-        PLATFORM_ARM32,
-        PLATFORM_ARM64,
-        PLATFORM_X86_64,
+            PLATFORM_ARM32,
+            PLATFORM_ARM64,
+            PLATFORM_X86_64,
     ]
 
     /**
@@ -181,7 +181,7 @@ class FlutterPlugin implements Plugin<Project> {
             rootProject.tasks.register('generateLockfiles') {
                 rootProject.subprojects.each { subproject ->
                     def gradlew = (OperatingSystem.current().isWindows()) ?
-                        "${rootProject.projectDir}/gradlew.bat" : "${rootProject.projectDir}/gradlew"
+                            "${rootProject.projectDir}/gradlew.bat" : "${rootProject.projectDir}/gradlew"
                     rootProject.exec {
                         workingDir rootProject.projectDir
                         executable gradlew
@@ -201,8 +201,8 @@ class FlutterPlugin implements Plugin<Project> {
         }
 
         engineVersion = useLocalEngine()
-            ? "+" // Match any version since there's only one.
-            : "1.0.0-" + Paths.get(flutterRoot.absolutePath, "bin", "internal", "engine.version").toFile().text.trim()
+                ? "+" // Match any version since there's only one.
+                : "1.0.0-" + Paths.get(flutterRoot.absolutePath, "bin", "internal", "engine.version").toFile().text.trim()
 
         engineRealm = Paths.get(flutterRoot.absolutePath, "bin", "internal", "engine.realm").toFile().text.trim()
         if (engineRealm) {
@@ -212,8 +212,8 @@ class FlutterPlugin implements Plugin<Project> {
         // Configure the Maven repository.
         String hostedRepository = System.env.FLUTTER_STORAGE_BASE_URL ?: DEFAULT_MAVEN_HOST
         String repository = useLocalEngine()
-            ? project.property('local-engine-repo')
-            : "$hostedRepository/${engineRealm}download.flutter.io"
+                ? project.property('local-engine-repo')
+                : "$hostedRepository/${engineRealm}download.flutter.io"
         rootProject.allprojects {
             repositories {
                 maven {
@@ -267,9 +267,9 @@ class FlutterPlugin implements Plugin<Project> {
         flutterExecutable = Paths.get(flutterRoot.absolutePath, "bin", flutterExecutableName).toFile();
 
         if (project.hasProperty("multidex-enabled") &&
-            project.property("multidex-enabled").toBoolean()) {
+                project.property("multidex-enabled").toBoolean()) {
             String flutterMultidexKeepfile = Paths.get(flutterRoot.absolutePath, "packages", "flutter_tools",
-                "gradle", "flutter_multidex_keepfile.txt")
+                    "gradle", "flutter_multidex_keepfile.txt")
             project.android {
                 buildTypes {
                     release {
@@ -431,9 +431,9 @@ class FlutterPlugin implements Plugin<Project> {
             // See https://issuetracker.google.com/139821726, and
             // https://github.com/flutter/flutter/issues/72185 for more details.
             addApiDependencies(
-              pluginProject,
-              buildType.name,
-              "io.flutter:flutter_embedding_$flutterBuildMode:$engineVersion"
+                    pluginProject,
+                    buildType.name,
+                    "io.flutter:flutter_embedding_$flutterBuildMode:$engineVersion"
             )
         }
 
@@ -532,7 +532,7 @@ class FlutterPlugin implements Plugin<Project> {
         assert dependencyObject.name instanceof String
         Project pluginProject = project.rootProject.findProject(":${dependencyObject.name}")
         if (pluginProject == null ||
-            !doesSupportAndroidPlatform(pluginProject.projectDir.parentFile.path)) {
+                !doesSupportAndroidPlatform(pluginProject.projectDir.parentFile.path)) {
             return
         }
         assert dependencyObject.dependencies instanceof List
@@ -543,7 +543,7 @@ class FlutterPlugin implements Plugin<Project> {
             }
             Project dependencyProject = project.rootProject.findProject(":$pluginDependencyName")
             if (dependencyProject == null ||
-                !doesSupportAndroidPlatform(dependencyProject.projectDir.parentFile.path)) {
+                    !doesSupportAndroidPlatform(dependencyProject.projectDir.parentFile.path)) {
                 return
             }
             // Wait for the Android plugin to load and add the dependency to the plugin project.
@@ -556,9 +556,7 @@ class FlutterPlugin implements Plugin<Project> {
     }
 
     private Properties getPluginList() {
-        // 判断根项目是否包含KMM插件
-        boolean isKmmModule = new File(project.rootProject.projectDir, 'shared').exists()
-        File pluginsFile = new File(isKmmModule?project.projectDir.parentFile:project.projectDir.parentFile.parentFile, '.flutter-plugins')
+        File pluginsFile = new File(project.projectDir.parentFile.parentFile, '.flutter-plugins')
         Properties allPlugins = readPropertiesIfExist(pluginsFile)
         Properties androidPlugins = new Properties()
         allPlugins.each { name, path ->
@@ -595,9 +593,7 @@ class FlutterPlugin implements Plugin<Project> {
         // This means, `plugin-a` depends on `plugin-b` and `plugin-c`.
         // `plugin-b` depends on `plugin-c`.
         // `plugin-c` doesn't depend on anything.
-        // 判断根项目是否包含KMM插件
-        boolean isKmmModule = new File(project.rootProject.projectDir, 'shared').exists()
-        File pluginsDependencyFile = new File(isKmmModule?project.projectDir.parentFile:project.projectDir.parentFile.parentFile, '.flutter-plugins-dependencies')
+        File pluginsDependencyFile = new File(project.projectDir.parentFile.parentFile, '.flutter-plugins-dependencies')
         if (pluginsDependencyFile.exists()) {
             def object = new JsonSlurper().parseText(pluginsDependencyFile.text)
             assert object instanceof Map
@@ -722,7 +718,7 @@ class FlutterPlugin implements Plugin<Project> {
         // Warning: the name of this task is used by other code. Change with caution.
         project.tasks.register('javaVersion') {
             description 'Print the current java version used by gradle. '
-                'see: https://docs.gradle.org/current/javadoc/org/gradle/api/JavaVersion.html'
+            'see: https://docs.gradle.org/current/javadoc/org/gradle/api/JavaVersion.html'
             doLast {
                 println(JavaVersion.current())
             }
@@ -1032,7 +1028,7 @@ class FlutterPlugin implements Plugin<Project> {
                     def abiVersionCode = ABI_VERSION.get(output.getFilter(OutputFile.ABI))
                     if (abiVersionCode != null) {
                         output.versionCodeOverride =
-                            abiVersionCode * 1000 + variant.versionCode
+                                abiVersionCode * 1000 + variant.versionCode
                     }
                 }
             }
@@ -1109,8 +1105,8 @@ class FlutterPlugin implements Plugin<Project> {
             Task cleanPackageAssets = project.tasks.findByPath(":flutter:cleanPackage${variant.name.capitalize()}Assets")
             boolean isUsedAsSubproject = packageAssets && cleanPackageAssets && !isBuildingAar
             Task copyFlutterAssetsTask = project.tasks.create(
-                name: "copyFlutterAssets${variant.name.capitalize()}",
-                type: Copy,
+                    name: "copyFlutterAssets${variant.name.capitalize()}",
+                    type: Copy,
             ) {
                 dependsOn compileTask
                 with compileTask.assets
@@ -1122,7 +1118,7 @@ class FlutterPlugin implements Plugin<Project> {
                 }
                 // `variant.mergeAssets` will be removed at the end of 2019.
                 def mergeAssets = variant.hasProperty("mergeAssetsProvider") ?
-                    variant.mergeAssetsProvider.get() : variant.mergeAssets
+                        variant.mergeAssetsProvider.get() : variant.mergeAssets
                 dependsOn mergeAssets
                 dependsOn "clean${mergeAssets.name.capitalize()}"
                 mergeAssets.mustRunAfter("clean${mergeAssets.name.capitalize()}")
@@ -1131,7 +1127,7 @@ class FlutterPlugin implements Plugin<Project> {
             if (!isUsedAsSubproject) {
                 def variantOutput = variant.outputs.first()
                 def processResources = variantOutput.hasProperty("processResourcesProvider") ?
-                    variantOutput.processResourcesProvider.get() : variantOutput.processResources
+                        variantOutput.processResourcesProvider.get() : variantOutput.processResources
                 processResources.dependsOn(copyFlutterAssetsTask)
             }
             // Task compressAssets uses the output of copyFlutterAssetsTask,
@@ -1147,12 +1143,12 @@ class FlutterPlugin implements Plugin<Project> {
             project.android.applicationVariants.all { variant ->
                 Task assembleTask = getAssembleTask(variant)
                 if (!shouldConfigureFlutterTask(assembleTask)) {
-                  return
+                    return
                 }
                 Task copyFlutterAssetsTask = addFlutterDeps(variant)
                 def variantOutput = variant.outputs.first()
                 def processResources = variantOutput.hasProperty("processResourcesProvider") ?
-                    variantOutput.processResourcesProvider.get() : variantOutput.processResources
+                        variantOutput.processResourcesProvider.get() : variantOutput.processResources
                 processResources.dependsOn(copyFlutterAssetsTask)
 
                 // Copy the output APKs into a known location, so `flutter run` or `flutter build apk`
@@ -1167,12 +1163,12 @@ class FlutterPlugin implements Plugin<Project> {
                     assembleTask.doLast {
                         // `packageApplication` became `packageApplicationProvider` in AGP 3.3.0.
                         def outputDirectory = variant.hasProperty("packageApplicationProvider")
-                            ? variant.packageApplicationProvider.get().outputDirectory
-                            : variant.packageApplication.outputDirectory
+                                ? variant.packageApplicationProvider.get().outputDirectory
+                                : variant.packageApplication.outputDirectory
                         //  `outputDirectory` is a `DirectoryProperty` in AGP 4.1.
                         String outputDirectoryStr = outputDirectory.metaClass.respondsTo(outputDirectory, "get")
-                            ? outputDirectory.get()
-                            : outputDirectory
+                                ? outputDirectory.get()
+                                : outputDirectory
                         String filename = "app"
                         String abi = output.getFilter(OutputFile.ABI)
                         if (abi != null && !abi.isEmpty()) {
@@ -1237,8 +1233,8 @@ class FlutterPlugin implements Plugin<Project> {
                         copyFlutterAssetsTask = addFlutterDeps(libraryVariant)
                     }
                     Task mergeAssets = project
-                        .tasks
-                        .findByPath(":${hostAppProjectName}:merge${appProjectVariant.name.capitalize()}Assets")
+                            .tasks
+                            .findByPath(":${hostAppProjectName}:merge${appProjectVariant.name.capitalize()}Assets")
                     assert mergeAssets
                     mergeAssets.dependsOn(copyFlutterAssetsTask)
                 }
@@ -1449,24 +1445,24 @@ class FlutterTask extends BaseFlutterTask {
     }
 
     FileCollection readDependencies(File dependenciesFile, Boolean inputs) {
-      if (dependenciesFile.exists()) {
-        // Dependencies file has Makefile syntax:
-        //   <target> <files>: <source> <files> <separated> <by> <non-escaped space>
-        String depText = dependenciesFile.text
-        // So we split list of files by non-escaped(by backslash) space,
-        def matcher = depText.split(': ')[inputs ? 1 : 0] =~ /(\\ |[^\s])+/
-        // then we replace all escaped spaces with regular spaces
-        def depList = matcher.collect{it[0].replaceAll("\\\\ ", " ")}
-        return project.files(depList)
-      }
-      return project.files();
+        if (dependenciesFile.exists()) {
+            // Dependencies file has Makefile syntax:
+            //   <target> <files>: <source> <files> <separated> <by> <non-escaped space>
+            String depText = dependenciesFile.text
+            // So we split list of files by non-escaped(by backslash) space,
+            def matcher = depText.split(': ')[inputs ? 1 : 0] =~ /(\\ |[^\s])+/
+            // then we replace all escaped spaces with regular spaces
+            def depList = matcher.collect{it[0].replaceAll("\\\\ ", " ")}
+            return project.files(depList)
+        }
+        return project.files();
     }
 
     @InputFiles
     FileCollection getSourceFiles() {
         FileCollection sources = project.files()
         for (File depfile in getDependenciesFiles()) {
-          sources += readDependencies(depfile, true)
+            sources += readDependencies(depfile, true)
         }
         return sources + project.files('pubspec.yaml')
     }
@@ -1475,7 +1471,7 @@ class FlutterTask extends BaseFlutterTask {
     FileCollection getOutputFiles() {
         FileCollection sources = project.files()
         for (File depfile in getDependenciesFiles()) {
-          sources += readDependencies(depfile, false)
+            sources += readDependencies(depfile, false)
         }
         return sources
     }

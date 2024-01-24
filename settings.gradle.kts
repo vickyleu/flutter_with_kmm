@@ -41,7 +41,7 @@ pluginManagement {
             val sourceLocation: String,
             val patchLocation: String,
             val description: String,
-            val version: String,
+//            val version: String,
             val mustBeModified: Boolean = true
         )
         val properties = java.util.Properties()
@@ -82,7 +82,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src",
                 patchLocation = "project.dart",
                 description = "给官方提过issue,但是它们不愿意改 https://github.com/flutter/flutter/issues/134721\n否则当前项目无法正常被编译",
-                version = flutterVersion
+//                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -90,7 +90,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib",
                 patchLocation = "executable.dart",
                 description = "否则当前项目无法正常被编译",
-                version = flutterVersion
+//                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix KMM parse error",
@@ -98,7 +98,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle.dart",
                 description = "否则当前项目无法正常被编译",
-                version = flutterVersion
+//                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix agp plugin too high error",
@@ -106,7 +106,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/lib/src/android",
                 patchLocation = "gradle_utils.dart",
                 description = "否则当前项目无法正常被编译",
-                version = flutterVersion
+//                version = flutterVersion
             ),
             FlutterPatch(
                 title = "Fix methodChannel loading error",
@@ -114,7 +114,7 @@ pluginManagement {
                 sourceLocation = "packages/flutter_tools/gradle/src/main/groovy",
                 patchLocation = "flutter.groovy",
                 description = "如果使用了原生插件就必须修改,否则GeneratedPluginRegistrant会找不到依赖",
-                version = flutterVersion,
+//                version = flutterVersion,
                 mustBeModified = false
             )
         )
@@ -122,7 +122,7 @@ pluginManagement {
         val pluginsFile = file(".flutter-plugins-dependencies")
         fun setupFlutterPatch(flutterSdkPath: String) {
             patches.forEach {
-                val replaceFile = file("patch/${it.version}/${it.patchLocation}")
+                val replaceFile = file("patch/${it.patchLocation}") //${it.version} flutter版本号,查看了好多个版本的更新,发现并没有很大区别,所以这里不需要区分版本号
                 val conflictDartSource =
                     file("${flutterSdkPath}/${it.sourceLocation}/${it.patchLocation}")
                 if (!replaceFile.exists() && it.mustBeModified) {
@@ -163,7 +163,7 @@ pluginManagement {
 
                     if (textReplace != text && it.mustBeModified) {
                         throw exception
-                    }else if(it.patchLocation=="flutter.groovy"&&!pluginsFile.exists()){
+                    }else if(textReplace != text && it.patchLocation=="flutter.groovy" && pluginsFile.exists()){
                         throw exception
                     }
                 }
